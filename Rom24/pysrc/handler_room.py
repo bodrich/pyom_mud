@@ -278,10 +278,7 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
                 fp.write(js)
 
         if self.inventory:
-            for item_id in self.inventory[:]:
-                if item_id not in instance.items:
-                    logger.error('Item %d is in Room %d\'s inventory, but does not exist?', item_id, self.instance_id)
-                    continue
+            for item_id in self.items[:]:
                 item = instance.items[item_id]
                 item.save(in_inventory=True, force=force)
 
