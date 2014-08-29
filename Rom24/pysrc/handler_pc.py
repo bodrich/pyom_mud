@@ -3,6 +3,7 @@ import random
 import time
 import json
 import copy
+import hashlib
 import logging
 
 logger = logging.getLogger()
@@ -18,6 +19,7 @@ import living
 import settings
 import state_checks
 import update
+import handler_item
 
 
 class Pc(living.Living):
@@ -27,6 +29,7 @@ class Pc(living.Living):
     def __init__(self, template=None, **kwargs):
         import handler_item
         super().__init__()
+        self.is_pc = True
         self.buffer = []
         self.valid = False
         self.pwd = ""
@@ -74,7 +77,7 @@ class Pc(living.Living):
                     self._fighting = None
                     self.position = merc.POS_STANDING
                 if self.environment:
-                    if self._environment not in merc.global_instances.keys():
+                    if self._environment not in instance.global_instances.keys():
                         self.environment = None
                 if self.inventory:
                     for instance_id in self.inventory[:]:
@@ -87,13 +90,15 @@ class Pc(living.Living):
             Pc.instance_count += 1
         else:
             Pc.template_count += 1
+        self._last_saved = None
+        self._md5 = None
 
     def __del__(self):
         try:
             logger.trace("Freeing %s" % str(self))
             if self.instance_id:
                 Pc.instance_count -= 1
-                if merc.player_characters.get(self.instance_id, None):
+                if instance.players.get(self.instance_id, None):
                     self.instance_destructor()
             else:
                 Pc.template_count -= 1
@@ -104,19 +109,19 @@ class Pc(living.Living):
         return "<PC: %s ID %d>" % (self.name, self.instance_id)
 
     def instance_setup(self):
-        merc.global_instances[self.instance_id] = self
-        merc.characters[self.instance_id] = self
-        merc.player_characters[self.instance_id] = self
-        if self.name not in merc.instances_by_player.keys():
-            merc.instances_by_player[self.name] = [self.instance_id]
+        instance.global_instances[self.instance_id] = self
+        instance.characters[self.instance_id] = self
+        instance.players[self.instance_id] = self
+        if self.name not in instance.instances_by_player.keys():
+            instance.instances_by_player[self.name] = [self.instance_id]
         else:
-            merc.instances_by_player[self.name] += [self.instance_id]
+            instance.instances_by_player[self.name] += [self.instance_id]
 
     def instance_destructor(self):
-        merc.instances_by_player[self.name].remove(self.instance_id)
-        del merc.player_characters[self.instance_id]
-        del merc.characters[self.instance_id]
-        del merc.global_instances[self.instance_id]
+        instance.instances_by_player[self.name].remove(self.instance_id)
+        del instance.players[self.instance_id]
+        del instance.characters[self.instance_id]
+        del instance.global_instances[self.instance_id]
 
     def absorb(self, *args):
         pass
@@ -571,7 +576,9 @@ class Pc(living.Living):
         for k, v in self.__dict__.items():
             if str(type(v)) in ("<class 'function'>", "<class 'method'>"):
                 continue
-            if str(k) in ('desc', 'send'):
+            elif str(k) in ('desc', 'send'):
+                continue
+            elif str(k) in ('_last_saved', '_md5'):
                 continue
             else:
                 tmp_dict[k] = v
@@ -606,7 +613,7 @@ class Pc(living.Living):
         stub['last_login'] = self._last_login
         stub['last_logout'] = self._last_logout
         stub['room'] = self._saved_room_vnum
-        js = json.dumps(stub, default=instance.to_json, indent=4)
+        js = json.dumps(stub, default=instance.to_json, indent=4, sort_keys=True)
         with open(filename, 'w') as fp:
             fp.write(js)
 
@@ -632,24 +639,39 @@ class Pc(living.Living):
             logger.error('Could not open player stub file for %s', player_name)
             return None
 
-    def save(self, logout: bool=False):
+    def save(self, logout: bool=False, force: bool=False):
+        if self._last_saved is None:
+            self._last_saved = time.time() - settings.SAVE_LIMITER - 2
+        if not force and time.time() < self._last_saved + settings.SAVE_LIMITER:
+            return
+
+        self._last_saved = time.time()
         self.save_stub(logout)
         pathname = os.path.join(settings.PLAYER_DIR, self.name[0].lower(), self.name.capitalize())
         os.makedirs(pathname, 0o755, True)
         filename = os.path.join(pathname, 'player.json')
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4)
-        with open(filename, 'w') as fp:
-            fp.write(js)
+        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
+        if self._md5 != md5:
+            self._md5 = md5
+            with open(filename, 'w') as fp:
+                fp.write(js)
 
         if self.inventory:
             for item_id in self.inventory[:]:
-                item = merc.items[item_id]
-                item.save(in_inventory=True, player_name=self.name)
+                if item_id not in instance.items:
+                    logger.error('Item %d is in Player %s\'s inventory, but does not exist?', item_id, self.name)
+                    continue
+                item = instance.items[item_id]
+                item.save(in_inventory=True, player_name=self.name, force=force)
         for item_id in self.equipped.values():
             if item_id:
-                item = merc.items[item_id]
-                item.save(is_equipped=True, player_name=self.name)
+                if item_id not in instance.items:
+                    logger.error('Item %d is in Player %s\'s inventory, but does not exist?', item_id, self.name)
+                    continue
+                item = instance.items[item_id]
+                item.save(is_equipped=True, player_name=self.name, force=force)
 
     @classmethod
     def load(cls, player_name: str=None):
@@ -666,6 +688,13 @@ class Pc(living.Living):
             if isinstance(obj, Pc):
                 obj._last_login = time.time()
                 obj._last_logout = None
+                # This just ensures that all items the player has are actually loaded.
+                if obj.inventory:
+                    for item_id in obj.inventory[:]:
+                        handler_item.Items.load(instance_id=item_id, player_name=player_name)
+                for item_id in obj.equipped.values():
+                    if item_id:
+                        handler_item.Items.load(instance_id=item_id, player_name=player_name)
                 return obj
             else:
                 logger.error('Could not load player file for %s', player_name)

@@ -1,15 +1,17 @@
 import os
 import json
 from collections import OrderedDict
+import logging
+
+logger = logging.getLogger()
 
 import object_creator
 import instance
 from merc import *
 import tables
 import world_classes
-import merc
 import settings
-import pc
+import handler_pc
 import auth
 
 
@@ -19,7 +21,7 @@ def area_pickler():
 def legacy_load_char_obj(d, name):
     #ch = handler_ch.CHAR_DATA()
     #ch.pcdata = handler_ch.PC_DATA()
-    ch = pc.Pc(name)
+    ch = handler_pc.Pc(name)
     found = False
     pfile = os.path.join(settings.LEGACY_PLAYER_DIR, name + '.json')
     if os.path.isfile(pfile):
@@ -47,14 +49,14 @@ def legacy_save_char_obj(ch):
     if ch.inventory:
         fwrite['inventory'] = [fwrite_obj(ch, o) for o in ch.inventory]
 
-    to_write = json.dumps(fwrite, indent=4)
+    to_write = json.dumps(fwrite, indent=4, sort_keys=True)
     with open(pfile, 'w') as pf:
         pf.write(to_write)
 
 
 def fwrite_obj(ch, obj, contained_by=None):
     odict = OrderedDict()
-    obj = merc.items[obj]
+    obj = instance.items[obj]
     odict['Vnum'] = obj.vnum
     odict['Enchanted'] = obj.enchanted
     odict['Name'] = obj.name
@@ -85,24 +87,24 @@ def fwrite_obj(ch, obj, contained_by=None):
 def recursive_item_jsonify(item_to_json, inv_dir: str=None, equip_dir: str=None,
                            is_equipment: bool=False, is_in_inventory: bool=False):
     if is_equipment:
-        to_equipped = json.dumps(item_to_json, default=instance.to_json, indent=4)
+        to_equipped = json.dumps(item_to_json, default=instance.to_json, indent=4, sort_keys=True)
         equip_write = os.path.join(equip_dir, str(item_to_json.instance_id) + '.json')
         with open(equip_write, 'w') as eq:
             eq.write(to_equipped)
         if item_to_json.inventory:
             for item_id in item_to_json.inventory[:]:
-                new_item = merc.items[item_id]
+                new_item = instance.items[item_id]
                 recursive_item_jsonify(new_item, equip_dir=equip_dir, is_equipment=True)
         else:
             return
     if is_in_inventory:
-        to_inventory = json.dumps(item_to_json, default=instance.to_json, indent=4)
+        to_inventory = json.dumps(item_to_json, default=instance.to_json, indent=4, sort_keys=True)
         inventory_write = os.path.join(inv_dir, str(item_to_json.instance_id) + '.json')
         with open(inventory_write, 'w') as inv:
             inv.write(to_inventory)
         if item_to_json.inventory:
             for item_id in item_to_json.inventory[:]:
-                new_item = merc.items[item_id]
+                new_item = instance.items[item_id]
                 recursive_item_jsonify(new_item, inv_dir=inv_dir, is_in_inventory=True)
         else:
             return
@@ -130,7 +132,7 @@ def fwrite_char(ch):
     if ch.in_room.vnum == ROOM_VNUM_LIMBO and ch.was_in_room:
         in_room = ch.was_in_room
     elif not ch.in_room:
-        in_room = merc.instances_by_room[ROOM_VNUM_TEMPLE][0]
+        in_room = instance.instances_by_room[ROOM_VNUM_TEMPLE][0]
     else:
         in_room = ch.in_room
     chdict["Room"] = in_room.vnum
@@ -231,7 +233,7 @@ def fread_char(chdict, ch):
     ch.trust = chdict["Tru"]
     ch.played = chdict["Plyd"]
     ch.lines = chdict["Scro"]
-    room = merc.instances_by_room[chdict["Room"]][0]
+    room = instance.instances_by_room[chdict["Room"]][0]
     if not room:
         room = chdict["Room"]
     ch.environment = room
@@ -296,7 +298,7 @@ def fread_items(contents, objects, contained_by=None):
 
 #unused
 def fread_item(contents, odict):
-    item = object_creator.create_item(itemTemplate[odict['Vnum']], odict['Lev'], odict['instance_id'])
+    item = object_creator.create_item(item_templates[odict['Vnum']], odict['Lev'], odict['instance_id'])
     item.enchanted = odict['Enchanted']
     item.name = odict['Name']
     item.short_descr = odict['ShD']

@@ -1,10 +1,9 @@
 import logging
-import comm
-import handler_ch
-import save
 
 logger = logging.getLogger()
 
+import comm
+import handler_ch
 import merc
 import interp
 
@@ -16,7 +15,7 @@ def do_shutdown(ch, argument):
     for d in merc.descriptor_list[:]:
         vch = handler_ch.CH(d)
         if vch:
-            vch.save(True)
+            vch.save(logout=True, force=True)
             comm.close_socket(d)
 
 

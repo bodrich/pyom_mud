@@ -4,7 +4,6 @@ logger = logging.getLogger()
 
 import merc
 import interp
-import save
 import game_utils
 import handler_game
 import state_checks
@@ -37,7 +36,7 @@ def do_freeze(ch, argument):
         handler_game.wiznet("$N puts %s in the deep freeze." % victim.name, ch, None, merc.WIZ_PENALTIES,
                             merc.WIZ_SECURE, 0)
 
-    victim.save()
+    victim.save(force=True)
     return
 
 

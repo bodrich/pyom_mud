@@ -1,10 +1,10 @@
 import logging
-import state_checks
 
 logger = logging.getLogger()
 
 import merc
 import interp
+import instance
 
 
 # Thanks to Zrin for auto-exit part.
@@ -29,7 +29,7 @@ def do_exits(ch, argument):
             if pexit.is_broken:
                 buf += " #%s#" % (merc.dir_name[door])
                 continue
-            pto_room = merc.rooms[pexit.to_room]
+            pto_room = instance.rooms[pexit.to_room]
             if fAuto:
                 if pexit.exit_info.is_set(merc.EX_CLOSED):
                     buf += " [[%s]]" % (merc.dir_name[door])

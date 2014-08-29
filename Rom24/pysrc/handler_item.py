@@ -34,6 +34,8 @@
 import json
 import os
 import copy
+import hashlib
+import time
 import logging
 
 logger = logging.getLogger()
@@ -150,13 +152,15 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             Items.instance_count += 1
         else:
             Items.template_count += 1
+        self._last_saved = None
+        self._md5 = None
 
     def __del__(self):
         try:
             logger.trace("Freeing %s" % str(self))
             if self.instance_id:
                 Items.instance_count -= 1
-                if merc.items.get(self.instance_id, None):
+                if instance.items.get(self.instance_id, None):
                     self.instance_destructor()
             else:
                 Items.template_count -= 1
@@ -350,17 +354,17 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
                            '%d, %r' % (instance_object.instance_id, type(instance_object)))
 
     def instance_setup(self):
-        merc.items[self.instance_id] = self
-        merc.global_instances[self.instance_id] = self
-        if self.vnum not in merc.instances_by_item.keys():
-            merc.instances_by_item[self.vnum] = [self.instance_id]
+        instance.items[self.instance_id] = self
+        instance.global_instances[self.instance_id] = self
+        if self.vnum not in instance.instances_by_item.keys():
+            instance.instances_by_item[self.vnum] = [self.instance_id]
         else:
-            merc.instances_by_item[self.vnum] += [self.instance_id]
+            instance.instances_by_item[self.vnum] += [self.instance_id]
 
     def instance_destructor(self):
-        merc.instances_by_item[self.vnum].remove(self.instance_id)
-        del merc.items[self.instance_id]
-        del merc.global_instances[self.instance_id]
+        instance.instances_by_item[self.vnum].remove(self.instance_id)
+        del instance.items[self.instance_id]
+        del instance.global_instances[self.instance_id]
         # Remove an object.
 
     def apply_ac(self, ac_position):
@@ -378,7 +382,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         # okay, move all the old flags into new vectors if we have to
         if not self.enchanted:
             self.enchanted = True
-            for paf in merc.itemTemplate[self.vnum].affected:
+            for paf in instance.item_templates[self.vnum].affected:
                 af_new = handler_game.AFFECT_DATA()
                 self.affected.append(af_new)
 
@@ -419,7 +423,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             return
 
         if self.in_living is not None and self.equipped_to:
-            merc.characters[self.in_living].affect_modify(paf, False)
+            instance.characters[self.in_living].affect_modify(paf, False)
 
         where = paf.where
         vector = paf.bitvector
@@ -448,7 +452,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         self.affected.remove(paf)
         del paf
         if self.in_living is not None and self.equipped_to:
-            merc.characters[self.in_living].affect_check(where, vector)
+            instance.characters[self.in_living].affect_check(where, vector)
         return
 
     # Extract an obj from the world.
@@ -458,10 +462,10 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
                 self.in_living.raw_unequip(self)
             self.environment.get(self)
             for item_id in self.inventory[:]:
-                if self.instance_id not in merc.items:
+                if self.instance_id not in instance.items:
                     logger.error("Extract_obj: obj %d not found in obj_instance dict." % self.instance_id)
                     return
-                tmp = merc.items[item_id]
+                tmp = instance.items[item_id]
                 self.get(tmp)
                 tmp.extract()
         self.instance_destructor()
@@ -471,7 +475,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         total = 0
         if self.in_room:
             for person_id in self.in_room.people[:]:
-                person = merc.characters[person_id]
+                person = instance.characters[person_id]
                 if person.on == self.instance_id:
                     total += 1
         return total
@@ -484,6 +488,8 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         tmp_dict = {}
         for k, v in self.__dict__.items():
             if str(type(v)) in ("<class 'function'>", "<class 'method'>"):
+                continue
+            elif str(k) in ('_last_saved', '_md5'):
                 continue
             else:
                 tmp_dict[k] = v
@@ -502,7 +508,12 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             return cls(**tmp_data)
         return data
 
-    def save(self, is_equipped: bool=False, in_inventory: bool=False, player_name: str=None):
+    def save(self, is_equipped: bool=False, in_inventory: bool=False, player_name: str=None, force: bool=False):
+        if self._last_saved is None:
+            self._last_saved = time.time() - settings.SAVE_LIMITER - 2
+        if not force and time.time() < self._last_saved + settings.SAVE_LIMITER:
+            return
+
         if player_name is None:
             if self.instance_id:
                 top_dir = settings.INSTANCE_DIR
@@ -510,7 +521,11 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             else:
                 top_dir = settings.AREA_DIR
                 number = self.vnum
-            pathname = os.path.join(top_dir, '%d-%s' % (self.in_area.index, self.in_area.name), 'items')
+            if self.in_area.instance_id:
+                area_number = self.in_area.instance_id
+            else:
+                area_number = self.in_area.index
+            pathname = os.path.join(top_dir, '%d-%s' % (area_number, self.in_area.name), 'items')
         else:
             top_dir = os.path.join(settings.PLAYER_DIR, player_name[0].lower(), player_name.capitalize())
             number = self.instance_id
@@ -524,16 +539,22 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
                 raise ValueError('Player items must specify if they are equipped or in their inventory!')
 
         os.makedirs(pathname, 0o755, True)
-        filename = os.path.join(pathname, '%d.json' % number)
+        filename = os.path.join(pathname, '%d-item.json' % number)
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4)
-        with open(filename, 'w') as fp:
-            fp.write(js)
+        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
+        if self._md5 != md5:
+            self._md5 = md5
+            with open(filename, 'w') as fp:
+                fp.write(js)
 
         if self.inventory:
             for item_id in self.inventory[:]:
-                item = merc.global_instances[item_id]
-                item.save(is_equipped, in_inventory, player_name)
+                if item_id not in instance.global_instances:
+                    logger.error('Item %d is in Item %d\'s inventory, but does not exist?', item_id, self.instance_id)
+                    continue
+                item = instance.global_instances[item_id]
+                item.save(is_equipped=is_equipped, in_inventory=in_inventory, player_name=player_name, force=force)
 
     @classmethod
     def load(cls, instance_id: int=None, vnum: int=None, player_name: str=None):
@@ -541,6 +562,9 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             raise ValueError('You must provide either a vnum or an instance_id!')
         if vnum and instance_id:
             raise ValueError('You must provide either a vnum or an instance_id, not BOTH!')
+        if instance_id and instance_id in instance.items:
+            logger.warn('Instance %d of item already loaded!', instance_id)
+            return
 
         if not player_name:
             if instance_id:
@@ -552,7 +576,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         else:
             pathname = os.path.join(settings.PLAYER_DIR, player_name[0].lower(), player_name.capitalize())
             number = instance_id
-        target_file = '%d.json' % number
+        target_file = '%d-item.json' % number
         filename = None
         for a_path, a_directory, i_files in os.walk(pathname):
             if target_file in i_files:
@@ -603,9 +627,9 @@ def get_item(ch, item, this_container):
             return
     if item.in_room:
         for gch_id in item.in_room.people[:]:
-            gch = merc.characters[gch_id]
+            gch = instance.characters[gch_id]
             if gch.on:
-                on_item = merc.items[gch.on]
+                on_item = instance.items[gch.on]
                 if on_item.instance_id in item.in_room.items:
                     handler_game.act("$N appears to be using $p.", ch, item, gch, merc.TO_CHAR)
                     return
@@ -629,8 +653,8 @@ def get_item(ch, item, this_container):
         if ch.act.is_set(merc.PLR_AUTOSPLIT):
             # AUTOSPLIT code
             members = len([gch for gch in ch.in_room.people[:]
-                           if not merc.characters[gch].is_affected(merc.AFF_CHARM)
-                           and merc.characters[gch].is_same_group(ch)])
+                           if not instance.characters[gch].is_affected(merc.AFF_CHARM)
+                           and instance.characters[gch].is_same_group(ch)])
             if members > 1 and (item.value[0] > 1 or item.value[1]):
                 ch.do_split("%d %d" % (item.value[0], item.value[1]))
         ch.get(item)
@@ -655,7 +679,7 @@ def item_check(ch, obj):
 
 def format_item_to_char(item, ch, fShort):
     if type(item) == int:
-        item = merc.items[item]
+        item = instance.items[item]
     buf = ''
     if (fShort and not item.short_descr) or not item.description:
         return buf
@@ -689,7 +713,7 @@ def count_obj_list(itemInstance, contents):
     count = 0
     for item_id in contents:
         if item_id:
-            if merc.items[item_id].name == itemInstance.name:
+            if instance.items[item_id].name == itemInstance.name:
                 count += 1
     return count
 
@@ -697,9 +721,9 @@ def count_obj_list(itemInstance, contents):
 # for clone, to insure that cloning goes many levels deep
 def recursive_clone(ch, item, clone):
     for c_item_id in item.inventory[:]:
-        c_item = merc.items[c_item_id]
+        c_item = instance.items[c_item_id]
         if item_check(ch, c_item):
-            t_obj = object_creator.create_item(merc.itemTemplate[c_item.vnum], 0)
+            t_obj = object_creator.create_item(instance.item_templates[c_item.vnum], 0)
             object_creator.clone_item(c_item, t_obj)
             clone.put(t_obj)
             recursive_clone(ch, c_item, t_obj)

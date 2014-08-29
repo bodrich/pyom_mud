@@ -31,7 +31,8 @@
  * Now using Python 3 version https://code.google.com/p/miniboa-py3/
  ************/
 """
-import os, sys
+import os
+import sys
 import logging
 #import pdb
 
@@ -51,7 +52,7 @@ logging.addLevelName(21, 'BOOT')
 logging.Logger.boot = boot_log
 logging.addLevelName(5, 'TRACE')
 logging.Logger.trace = trace_log
-logging.basicConfig(format='%(asctime)s %(levelname)-8s %(module)16s| %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(module)16s| %(message)s', level=21)
 logger = logging.getLogger()
 
 from miniboa import TelnetServer
@@ -61,6 +62,7 @@ from hotfix import init_monitoring
 import time
 
 startup_time = time.time()
+
 
 def Pyom():
     sys.path.append(os.getcwd())
