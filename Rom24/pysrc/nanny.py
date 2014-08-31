@@ -566,14 +566,7 @@ def con_read_motd(self):
         ch.practice = 5
         buf = "the %s" % const.title_table[ch.guild.name][ch.level][ch.sex - 1]
         ch.title = buf
-        #ch.prompt = "<%hhp %mm %vmv> "
-        ch.do_outfit(ch_selections['weapon'])
-        ch.put(object_creator.create_item(instance.item_templates[merc.OBJ_VNUM_MAP], 0))
-        school_id = instance.instances_by_room[merc.ROOM_VNUM_SCHOOL][0]
-        school = instance.rooms[school_id]
-        school.put(ch)
-        ch.do_help("newbie info")
-
+        #needs to be done before do_outfit.
         #TODO: create a player manifest that we can use/check, instead of needing to walk the dir.
         player_files = list(sys_utils.flatten([x[2] for x in os.walk(settings.PLAYER_DIR)]))
         if len(player_files) < 1:
@@ -586,6 +579,12 @@ def con_read_motd(self):
             ch.send('\n\nCongratulations!  As the first player to log into this MUD, you are now\n' +
                     'the IMPLEMENTOR, the sucker in charge, the place where the buck stops.\n' +
                     'Enjoy!\n\n')
+        ch.do_outfit(ch_selections['weapon'])
+        ch.put(object_creator.create_item(instance.item_templates[merc.OBJ_VNUM_MAP], 0))
+        school_id = instance.instances_by_room[merc.ROOM_VNUM_SCHOOL][0]
+        school = instance.rooms[school_id]
+        school.put(ch)
+        ch.do_help("newbie info")
 
     if ch._environment in instance.global_instances.keys() and not ch.level == 0:
         room = instance.global_instances.get(ch._environment, None)
