@@ -636,8 +636,12 @@ class Pc(living.Living):
 
         if os.path.isfile(filename):
             logger.info('Loading %s player stub data', player_name)
-            with open(filename, 'r') as fp:
-                data = json.load(fp, object_hook=instance.from_json)
+            jso = ''
+            with open(filename, 'r+') as f:
+            # this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+            data = json.loads(jso, object_hook=instance.from_json)
             if isinstance(data, dict):
                 return data
             else:

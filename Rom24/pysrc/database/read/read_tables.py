@@ -31,7 +31,12 @@ def read_tables(listener=None, loc=DATA_DIR, extn=DATA_EXTN):
         logger.debug("        Loading %s(%s)", tok.name, path)
         data = None
         if os.path.isfile(path):
-            data = json.load(open(path,'r'))
+            jso = ''
+            with open(path, 'r+') as f:
+            # this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+            data = json.loads(jso)
         else:
             logger.warning('    Failed to find file %s', path)
             if listener:
