@@ -8,6 +8,7 @@ import logging
 
 logger = logging.getLogger()
 
+import bit
 import game_utils
 import handler_log
 import instance
@@ -36,6 +37,7 @@ class Pc(living.Living):
         self.trust = 1
         self.auth = None
         self.failed_attempts = 0
+        self.act = bit.Bit(merc.PLR_NOSUMMON, flagset_name="plr_flags")
         self.bamfin = ""
         self.bamfout = ""
         self._title = ""

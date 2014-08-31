@@ -14,7 +14,7 @@ class Immortal:
         self._trust = 0
         self.invis_level = 0
         self.incog_level = 0
-        self.wiznet = bit.Bit(flags=const.wiznet_table)
+        self.wiznet = bit.Bit(flagset_name="wiznet_table")
 
     def is_immortal(self):
         return self.trust >= merc.LEVEL_IMMORTAL

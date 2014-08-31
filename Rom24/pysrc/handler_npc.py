@@ -42,6 +42,7 @@ logger = logging.getLogger()
 import living
 import pyprogs
 import bit
+import merc
 import tables
 import handler_item
 import json
@@ -61,7 +62,8 @@ class Npc(living.Living):
         self.spec_fun = None
         self.new_format = True
         self.area = ""
-        self.off_flags = bit.Bit(flags=tables.off_flags)
+        self.act = bit.Bit(merc.PLR_NOSUMMON, flagset_name="act_flags")
+        self.off_flags = bit.Bit(flagset_name="off_flags")
         self.damage = [0, 0, 0]
         self.start_pos = 0
         self.default_pos = 0

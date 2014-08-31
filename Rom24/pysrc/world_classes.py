@@ -238,7 +238,7 @@ class Exit:
         self.name = ""
         self.to_room_vnum = None
         self.to_room = None
-        self.exit_info = bit.Bit(flags=tables.exit_flags)
+        self.exit_info = bit.Bit(flagset_name="exit_flags")
         self.key = None
         self.key_vnum = None
         self.keyword = ""
