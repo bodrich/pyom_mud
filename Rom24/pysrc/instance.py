@@ -268,14 +268,19 @@ def save():
     with open(filename, 'w') as fp:
         json.dump({'max_instance_id': max_instance_id, 'data': tmp_dict}, fp, default=to_json, indent=4, sort_keys=True)
 
+    logger.boot('Saving area data... %d areas', len(areas))
     for i in areas:
         areas[i].save(force=True)
+    logger.boot('Saving room data... %d rooms', len(rooms))
     for i in rooms:
         rooms[i].save(force=True)
+    logger.boot('Saving npc data... %d npcs', len(npcs))
     for i in npcs:
         npcs[i].save(force=True)
+    logger.boot('Saving player data... %d players', len(players))
     for i in players:
         players[i].save(force=True)
+    logger.boot('Saving item data... %d items', len(items))
     for i in items:
         it = items[i]
         if it.in_living is not None:
@@ -285,6 +290,7 @@ def save():
         if it.in_item is not None:
             continue
         it.save(force=True)
+    logger.boot('Done.')
 
 
 def load():
