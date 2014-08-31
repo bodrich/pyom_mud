@@ -1,7 +1,7 @@
 import random
 
 import const
-import effects
+import special_effects
 import fight
 import game_utils
 import handler_game
@@ -19,7 +19,7 @@ def spell_fire_breath(sn, level, ch, victim, target):
     dice_dam = game_utils.dice(level, 20)
 
     dam = max(hp_dam + dice_dam // 10, dice_dam + hp_dam // 10)
-    effects.fire_effect(victim.in_room, level, dam // 2, merc.TARGET_ROOM)
+    special_effects.fire_effect(victim.in_room, level, dam // 2, merc.TARGET_ROOM)
 
     for vch in victim.in_room.people[:]:
         if fight.is_safe_spell(ch, vch, True) or (vch.is_npc() and ch.is_npc() and (ch.fighting != vch or vch.fighting != ch)):
@@ -27,17 +27,17 @@ def spell_fire_breath(sn, level, ch, victim, target):
 
         if vch == victim:  # full damage */
             if handler_magic.saves_spell(level, vch, merc.DAM_FIRE):
-                effects.fire_effect(vch, level // 2, dam // 4, merc.TARGET_CHAR)
+                special_effects.fire_effect(vch, level // 2, dam // 4, merc.TARGET_CHAR)
                 fight.damage(ch, vch, dam // 2, sn, merc.DAM_FIRE, True)
             else:
-                effects.fire_effect(vch, level, dam, merc.TARGET_CHAR)
+                special_effects.fire_effect(vch, level, dam, merc.TARGET_CHAR)
                 fight.damage(ch, vch, dam, sn, merc.DAM_FIRE, True)
         else:  # partial damage */
             if handler_magic.saves_spell(level - 2, vch, merc.DAM_FIRE):
-                effects.fire_effect(vch, level // 4, dam // 8, merc.TARGET_CHAR)
+                special_effects.fire_effect(vch, level // 4, dam // 8, merc.TARGET_CHAR)
                 fight.damage(ch, vch, dam // 4, sn, merc.DAM_FIRE, True)
             else:
-                effects.fire_effect(vch, level // 2, dam // 4, merc.TARGET_CHAR)
+                special_effects.fire_effect(vch, level // 2, dam // 4, merc.TARGET_CHAR)
                 fight.damage(ch, vch, dam // 2, sn, merc.DAM_FIRE, True)
 
 

@@ -269,7 +269,11 @@ def game_loop(server):
 
     logger.boot('Pyom database booted in %.3f seconds', (boot_time - startup_time))
     logger.boot("Pyom is ready to rock on port %d", server.port)
+    logger.boot('Saving Pyom Game State.... ')
+    bef_save = time.time()
     instance.save()
+    save_time = time.time()
+    logger.boot('Save completed in %.3f seconds', (save_time - bef_save))
 
     done = False
     while not done:

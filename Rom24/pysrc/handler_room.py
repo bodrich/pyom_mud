@@ -270,7 +270,7 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
         os.makedirs(pathname, 0o755, True)
         filename = os.path.join(pathname, '%d-room.json' % number)
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
@@ -279,6 +279,9 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
 
         if self.inventory:
             for item_id in self.items[:]:
+                if item_id not in instance.items:
+                    logger.error('Item %d is in Room %d\'s inventory, but does not exist?', item_id, self.instance_id)
+                    continue
                 item = instance.items[item_id]
                 item.save(in_inventory=True, force=force)
 
@@ -304,9 +307,12 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
                 break
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
-
-        with open(filename, 'r') as fp:
-            obj = json.load(fp, object_hook=instance.from_json)
+        jso = ''
+        with open(filename, 'r+') as f:
+            # this reads in one line at a time from stdin - way faster. Syn
+            for line in f:
+                jso += line
+        obj = json.loads(jso, object_hook=instance.from_json)
         if isinstance(obj, Room):
             # Inventory is already loaded by Room's __init__ function.
             return obj

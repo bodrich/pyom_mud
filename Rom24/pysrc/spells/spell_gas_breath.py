@@ -1,7 +1,7 @@
 import random
 
 import const
-import effects
+import special_effects
 import fight
 import game_utils
 import handler_game
@@ -18,7 +18,7 @@ def spell_gas_breath(sn, level, ch, victim, target):
     dice_dam = game_utils.dice(level, 12)
 
     dam = max(hp_dam + dice_dam // 10, dice_dam + hp_dam // 10)
-    effects.poison_effect(ch.in_room, level, dam, merc.TARGET_ROOM)
+    special_effects.poison_effect(ch.in_room, level, dam, merc.TARGET_ROOM)
 
     for vch_id in ch.in_room.people:
 
@@ -27,10 +27,10 @@ def spell_gas_breath(sn, level, ch, victim, target):
             continue
 
         if handler_magic.saves_spell(level, vch, merc.DAM_POISON):
-            effects.poison_effect(vch, level // 2, dam // 4, merc.TARGET_CHAR)
+            special_effects.poison_effect(vch, level // 2, dam // 4, merc.TARGET_CHAR)
             fight.damage(ch, vch, dam // 2, sn, merc.DAM_POISON, True)
         else:
-            effects.poison_effect(vch, level, dam, merc.TARGET_CHAR)
+            special_effects.poison_effect(vch, level, dam, merc.TARGET_CHAR)
             fight.damage(ch, vch, dam, sn, merc.DAM_POISON, True)
 
 

@@ -106,20 +106,32 @@ instances_by_player = {}
 # Things to omit from instances that are in templates.
 not_to_instance = []
 
+
 def isnamedtuple(obj):
     """
     Named Tuples look, to python, like a normal tuple, so we have to poke around
     their innards a bit to see if they're actually the fancy version.
+    -Updated by Syn,
+    we need to account for namedtuples that are created without using anamedtuple._make()
+    The check can now handle both scenarios, and will NOT hit positive on tuples or other types.
 
     :param obj: potential namedtuple container
     :type obj:
     :return: True if obj is a namedtuple
     :rtype: bool
     """
-    return isinstance(obj, tuple) and \
-           hasattr(obj, '_fields') and \
-           hasattr(obj, '_asdict') and \
-           callable(obj._asdict)
+    b = type(obj).__bases__
+    if len(b) != 1:
+        return False
+    f = getattr(obj, '_fields', None)
+    if not isinstance(f, tuple):
+        return False
+    elif not hasattr(obj, '_asdict'):
+        return False
+    elif not callable(obj._asdict):
+        return False
+    else:
+        return True
 
 
 def to_json(data):
@@ -231,7 +243,10 @@ def from_json(data):
                 class_name = found[0][1]
 
                 if module_name != '' and class_name != '':
-                    module_ref = importlib.import_module(module_name)
+                    if data[k].get('import_module', None):
+                        module_ref = importlib.import_module(data[k]['import_module'])
+                    else:
+                        module_ref = importlib.import_module(module_name)
                     class_ref = getattr(module_ref, class_name)
                     if hasattr(class_ref, 'from_json'):
                         return class_ref.from_json(data, from_json)
@@ -287,7 +302,7 @@ def load():
         global global_instances
         max_instance_id = tmp_dict['max_instance_id']
         import importlib
-        for k,v in tmp_dict['data']:
+        for k, v in tmp_dict['data']:
             module_ref = importlib.import_module(v[0])
             class_ref = getattr(module_ref, v[1])
             if hasattr(class_ref, 'load'):
