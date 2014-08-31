@@ -7,6 +7,7 @@ import interp
 import game_utils
 import handler_game
 import state_checks
+import instance
 
 
 def do_order(ch, argument):

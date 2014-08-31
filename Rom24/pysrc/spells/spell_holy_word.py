@@ -4,6 +4,7 @@ import game_utils
 import handler_game
 import merc
 import state_checks
+import instance
 
 
 def spell_holy_word(sn, level, ch, victim, target):

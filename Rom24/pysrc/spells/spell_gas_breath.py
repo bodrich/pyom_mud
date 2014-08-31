@@ -7,6 +7,7 @@ import game_utils
 import handler_game
 import handler_magic
 import merc
+import instance
 
 
 def spell_gas_breath(sn, level, ch, victim, target):

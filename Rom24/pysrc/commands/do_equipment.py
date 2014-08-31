@@ -5,6 +5,7 @@ logger = logging.getLogger()
 import merc
 import interp
 import handler_item
+import instance
 
 
 def do_equipment(ch, argument):

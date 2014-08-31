@@ -8,6 +8,7 @@ import merc
 import interp
 import handler_room
 import state_checks
+import instance
 
 
 # RT Enter portals

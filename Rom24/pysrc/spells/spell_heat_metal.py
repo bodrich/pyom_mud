@@ -6,6 +6,7 @@ import handler_game
 import handler_magic
 import merc
 import state_checks
+import instance
 
 
 def spell_heat_metal(sn, level, ch, victim, target):

@@ -4,6 +4,7 @@ import game_utils
 import handler_game
 import handler_magic
 import merc
+import instance
 
 
 def spell_chain_lightning(sn, level, ch, victim, target):

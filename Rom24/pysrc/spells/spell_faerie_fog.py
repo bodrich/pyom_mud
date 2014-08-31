@@ -3,6 +3,7 @@ import handler_game
 import handler_magic
 import merc
 import state_checks
+import instance
 
 
 def spell_faerie_fog(sn, level, ch, victim, target):

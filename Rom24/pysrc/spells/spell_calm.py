@@ -9,6 +9,7 @@ import fight
 import handler_game
 import merc
 import state_checks
+import instance
 
 
 def spell_calm(sn, level, ch, victim, target):

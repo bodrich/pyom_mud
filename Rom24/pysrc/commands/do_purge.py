@@ -8,6 +8,7 @@ import comm
 import interp
 import game_utils
 import state_checks
+import instance
 
 def do_purge(ch, argument):
     argument, arg = game_utils.read_word(argument)

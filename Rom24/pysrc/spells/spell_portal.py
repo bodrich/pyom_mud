@@ -4,6 +4,7 @@ import handler_magic
 import merc
 import object_creator
 import state_checks
+import instance
 
 
 def spell_portal(sn, level, ch, victim, target):

@@ -7,6 +7,7 @@ import interp
 import game_utils
 import handler_game
 import state_checks
+import instance
 
 # 'Split' originally by Gnort, God of Chaos.
 def do_split(ch, argument):

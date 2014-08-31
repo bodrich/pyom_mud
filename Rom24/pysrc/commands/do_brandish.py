@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger()
 
 import random
+import instance
 import merc
 import handler_game
 import handler_magic

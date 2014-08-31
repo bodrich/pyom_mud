@@ -8,6 +8,7 @@ import game_utils
 import handler_game
 import handler_room
 import state_checks
+import instance
 
 
 def do_open(ch, argument):
