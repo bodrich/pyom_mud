@@ -1,6 +1,5 @@
 __author__ = 'quixadhal'
 
-import psutil
 import time
 from datetime import datetime
 from collections import Iterable

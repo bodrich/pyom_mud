@@ -42,6 +42,7 @@ import logging
 logger = logging.getLogger()
 
 import settings
+import time
 
 '''For the instance dicts, we are not going to make another pointer, or copy, of
 the original entity. We are going to alias, or bind, the specific entity
@@ -257,6 +258,8 @@ def from_json(data):
 
 
 def save():
+    start_save_time = time.time()
+
     os.makedirs(settings.INSTANCE_DIR, 0o755, True)
     filename = os.path.join(settings.INSTANCE_DIR, 'list.json')
     tmp_dict = {}
@@ -268,18 +271,31 @@ def save():
     with open(filename, 'w') as fp:
         json.dump({'max_instance_id': max_instance_id, 'data': tmp_dict}, fp, default=to_json, indent=4, sort_keys=True)
 
+    data_save_time = time.time()
     logger.boot('Saving area data... %d areas', len(areas))
     for i in areas:
         areas[i].save(force=True)
+    logger.boot('Areas saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
     logger.boot('Saving room data... %d rooms', len(rooms))
     for i in rooms:
         rooms[i].save(force=True)
-    logger.boot('Saving npc data... %d npcs', len(npcs))
+    logger.boot('Rooms saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
+    logger.boot('Saving NPC data... %d npcs', len(npcs))
     for i in npcs:
         npcs[i].save(force=True)
+    logger.boot('NPCs saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
     logger.boot('Saving player data... %d players', len(players))
     for i in players:
         players[i].save(force=True)
+    logger.boot('Players saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
     logger.boot('Saving item data... %d items', len(items))
     for i in items:
         it = items[i]
@@ -290,8 +306,10 @@ def save():
         if it.in_item is not None:
             continue
         it.save(force=True)
-    logger.boot('Done.')
+    logger.boot('Items saved in %.3f seconds', (time.time() - data_save_time))
 
+    logger.boot('Done. Total time was %.3f seconds', (time.time() - start_save_time))
+    
 
 def load():
     filename = os.path.join(settings.INSTANCE_DIR, 'list.json')

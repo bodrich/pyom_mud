@@ -31,7 +31,7 @@ def do_wiznet(ch, argument):
     if "status".startswith(argument):
         if not state_checks.IS_SET(ch.wiznet, merc.WIZ_ON):
           buf += "off "
-        for name, flag in const.wiznet_table.items():
+        for name, flag in tables.wiznet_table.items():
             if state_checks.IS_SET(ch.wiznet, flag.bit):
                 buf += name + " "
             ch.send("Wiznet status:\n%s\n" % buf)
@@ -39,12 +39,12 @@ def do_wiznet(ch, argument):
     if "show".startswith(argument):
         # list of all wiznet options
         buf = ''
-        for name, flag in const.wiznet_table.items():
+        for name, flag in tables.wiznet_table.items():
             if flag.level <= ch.trust:
                 buf += name + " "
         ch.send("Wiznet options available to you are:\n%s\n" % buf)
         return
-    flag = state_checks.prefix_lookup(const.wiznet_table, argument)
+    flag = state_checks.prefix_lookup(tables.wiznet_table, argument)
     if not flag or ch.trust < flag.level:
         ch.send("No such option.\n")
         return

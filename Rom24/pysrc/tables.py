@@ -59,3 +59,21 @@ part_flags = OrderedDict()
 comm_flags = OrderedDict()
 exit_flags = OrderedDict()
 vuln_flags = OrderedDict()
+
+wiznet_type = namedtuple('wiznet_type', 'name bit level')
+wiznet_table = OrderedDict()
+
+
+bit_flags = OrderedDict()
+bit_flags["act_flags"] = act_flags
+bit_flags["plr_flags"] = plr_flags
+bit_flags["affect_flags"] = affect_flags
+bit_flags["off_flags"] = off_flags
+bit_flags["imm_flags"] = imm_flags
+bit_flags["form_flags"] = form_flags
+bit_flags["part_flags"] = part_flags
+bit_flags["comm_flags"] = comm_flags
+bit_flags["exit_flags"] = exit_flags
+bit_flags["vuln_flags"] = vuln_flags
+bit_flags["wiznet_table"] = wiznet_table
+
