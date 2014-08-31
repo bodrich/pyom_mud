@@ -298,7 +298,7 @@ def fread_items(contents, objects, contained_by=None):
 
 #unused
 def fread_item(contents, odict):
-    item = object_creator.create_item(item_templates[odict['Vnum']], odict['Lev'], odict['instance_id'])
+    item = object_creator.create_item(instance.item_templates[odict['Vnum']], odict['Lev'], odict['instance_id'])
     item.enchanted = odict['Enchanted']
     item.name = odict['Name']
     item.short_descr = odict['ShD']

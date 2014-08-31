@@ -42,6 +42,7 @@ import merc
 import handler_game
 import state_checks
 import game_utils
+import instance
 
 #Magic functions
 def say_spell(ch, spell):

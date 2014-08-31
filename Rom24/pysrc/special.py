@@ -42,6 +42,7 @@ import fight
 import handler_game
 import merc
 import state_checks
+import instance
 
 
 def spec_troll_member(ch):
