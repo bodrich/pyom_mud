@@ -45,7 +45,7 @@ def do_sell(ch, argument):
         cost += item.cost // 2 * roll // 100
         cost = min(cost, 95 * shop_utils.get_cost(keeper, item, True) // 100)
         cost = min(cost, (keeper.silver + 100 * keeper.gold))
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve( "haggle", True, 4)
     handler_game.act("You sell $p for %d silver and %d gold piece%s." % (
         cost - (cost // 100) * 100, cost // 100, ("" if cost == 1 else "s")), ch, item, None, merc.TO_CHAR)

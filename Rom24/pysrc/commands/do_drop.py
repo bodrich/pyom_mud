@@ -7,6 +7,7 @@ import handler_game
 import merc
 import interp
 import game_utils
+import instance
 
 
 def do_drop(ch, argument):

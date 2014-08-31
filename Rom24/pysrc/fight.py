@@ -45,7 +45,7 @@ import handler_game
 import random
 import update
 import const
-import effects
+import special_effects
 import handler_magic
 import skills
 import state_checks
@@ -152,7 +152,7 @@ def multi_hit(ch, victim, dt):
 
     if random.randint(1, 99) < chance:
         one_hit(ch, victim, dt)
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve('second attack', True, 5)
         if ch.fighting != victim:
             return
@@ -164,7 +164,7 @@ def multi_hit(ch, victim, dt):
 
     if random.randint(1, 99) < chance:
         one_hit(ch, victim, dt)
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve('third attack', True, 6)
         if ch.fighting != victim :
             return
@@ -370,7 +370,7 @@ def one_hit(ch, victim, dt):
             dam = game_utils.dice(ch.damage[DICE_NUMBER], ch.damage[DICE_TYPE])
     else:
         if sn != -1:
-            if ch.is_pc():
+            if ch.is_pc:
                 ch.check_improve( sn, True, 5)
         if wield:
             if wield.new_format:
@@ -397,7 +397,7 @@ def one_hit(ch, victim, dt):
     if ch.get_skill('enhanced damage') > 0:
         diceroll = random.randint(1, 99)
         if diceroll <= ch.get_skill('enhanced damage'):
-            if ch.is_pc():
+            if ch.is_pc:
                 ch.check_improve('enhanced damage', True, 6)
             dam += 2 * (dam * diceroll // 300)
     if not state_checks.IS_AWAKE(victim):
@@ -457,20 +457,20 @@ def one_hit(ch, victim, dt):
                 dam = random.randint(1, wield.level // 4 + 1)
                 handler_game.act("$n is burned by $p.", victim, wield, None, TO_ROOM)
                 handler_game.act("$p sears your flesh.", victim, wield, None, TO_CHAR)
-                effects.fire_effect(victim, wield.level // 2, dam, TARGET_CHAR)
+                special_effects.fire_effect(victim, wield.level // 2, dam, TARGET_CHAR)
                 damage(ch, victim, dam, 0, DAM_FIRE, False)
             if ch.fighting == victim and wield.flags.frost:
                 dam = random.randint(1, wield.level // 6 + 2)
                 handler_game.act("$p freezes $n.", victim, wield, None, TO_ROOM)
                 handler_game.act("The cold touch of $p surrounds you with ice.",
                                  victim, wield, None, TO_CHAR)
-                effects.cold_effect(victim, wield.level // 2, dam, TARGET_CHAR)
+                special_effects.cold_effect(victim, wield.level // 2, dam, TARGET_CHAR)
                 damage(ch, victim, dam, 0, DAM_COLD, False)
             if ch.fighting == victim and wield.flags.shocking:
                 dam = random.randint(1, wield.level // 5 + 2)
                 handler_game.act("$n is struck by lightning from $p.", victim, wield, None, TO_ROOM)
                 handler_game.act("You are shocked by $p.", victim, wield, None, TO_CHAR)
-                effects.shock_effect(victim, wield.level // 2, dam, TARGET_CHAR)
+                special_effects.shock_effect(victim, wield.level // 2, dam, TARGET_CHAR)
                 damage(ch, victim, dam, 0, DAM_LIGHTNING, False)
     return
 

@@ -541,7 +541,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         os.makedirs(pathname, 0o755, True)
         filename = os.path.join(pathname, '%d-item.json' % number)
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
@@ -562,7 +562,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             raise ValueError('You must provide either a vnum or an instance_id!')
         if vnum and instance_id:
             raise ValueError('You must provide either a vnum or an instance_id, not BOTH!')
-        if instance_id and instance_id in instance.items:
+        if instance_id and (instance_id in instance.items.keys()):
             logger.warn('Instance %d of item already loaded!', instance_id)
             return
 
@@ -584,9 +584,12 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
                 break
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
-
-        with open(filename) as fp:
-            obj = json.load(fp, object_hook=instance.from_json)
+        jso = ''
+        with open(filename, 'r+') as f:
+            # this reads in one line at a time from stdin - way faster. Syn
+            for line in f:
+                jso += line
+        obj = json.loads(jso, object_hook=instance.from_json)
         if not isinstance(obj, Items):
             raise TypeError('Could not load instance %r!' % number)
         if obj.inventory:

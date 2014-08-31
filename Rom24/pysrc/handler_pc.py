@@ -1,3 +1,4 @@
+import io
 import os
 import random
 import time
@@ -5,6 +6,8 @@ import json
 import copy
 import hashlib
 import logging
+import itertools
+import sys
 
 logger = logging.getLogger()
 
@@ -617,6 +620,11 @@ class Pc(living.Living):
         with open(filename, 'w') as fp:
             fp.write(js)
 
+    #player get override to enforce saves, to avoid 'cheat' activities
+    def get(self, instance_object):
+        super().get(instance_object)
+        self.save(force=True)
+        return instance_object
 
     @classmethod
     def load_stub(cls, player_name: str=None):
@@ -677,24 +685,19 @@ class Pc(living.Living):
     def load(cls, player_name: str=None):
         if not player_name:
             raise KeyError('Player name is required to load a player!')
-
         pathname = os.path.join(settings.PLAYER_DIR, player_name[0].lower(), player_name.capitalize())
         filename = os.path.join(pathname, 'player.json')
-
         if os.path.isfile(filename):
             logger.info('Loading %s player data', player_name)
-            with open(filename, 'r') as fp:
-                obj = json.load(fp, object_hook=instance.from_json)
+            jso = ''
+            with open(filename, 'r+') as f:
+                # this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+            obj = json.loads(jso, object_hook=instance.from_json)
             if isinstance(obj, Pc):
                 obj._last_login = time.time()
                 obj._last_logout = None
-                # This just ensures that all items the player has are actually loaded.
-                if obj.inventory:
-                    for item_id in obj.inventory[:]:
-                        handler_item.Items.load(instance_id=item_id, player_name=player_name)
-                for item_id in obj.equipped.values():
-                    if item_id:
-                        handler_item.Items.load(instance_id=item_id, player_name=player_name)
                 return obj
             else:
                 logger.error('Could not load player file for %s', player_name)

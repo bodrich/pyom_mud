@@ -129,7 +129,7 @@ def hit_gain(ch):
         if number < ch.get_skill('fast healing'):
             gain += number * gain // 100
             if ch.hit < ch.max_hit:
-                if ch.is_pc():
+                if ch.is_pc:
                     ch.check_improve('fast healing', True, 8)
 
         if ch.position == merc.POS_SLEEPING:
@@ -184,7 +184,7 @@ def mana_gain(ch):
         if number < ch.get_skill('meditation'):
             gain += number * gain // 100
             if ch.mana < ch.max_mana:
-                if ch.is_pc():
+                if ch.is_pc:
                     ch.check_improve( 'meditation', True, 8)
 
         if not ch.guild.fMana:

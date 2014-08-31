@@ -57,14 +57,14 @@ def do_disarm(ch, argument):
     if random.randint(1, 99) < chance:
         state_checks.WAIT_STATE(ch, const.skill_table['disarm'].beats)
         fight.disarm(ch, victim)
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve('disarm', True, 1)
     else:
         state_checks.WAIT_STATE(ch, const.skill_table['disarm'].beats)
         handler_game.act("You fail to disarm $N.", ch, None, victim, merc.TO_CHAR)
         handler_game.act("$n tries to disarm you, but fails.", ch, None, victim, merc.TO_VICT)
         handler_game.act("$n tries to disarm $N, but fails.", ch, None, victim, merc.TO_NOTVICT)
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve('disarm', False, 1)
     fight.check_killer(ch, victim)
     return

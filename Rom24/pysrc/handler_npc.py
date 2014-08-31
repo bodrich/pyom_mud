@@ -182,7 +182,7 @@ class Npc(living.Living):
         os.makedirs(pathname, 0o755, True)
         filename = os.path.join(pathname, '%d-npc.json' % number)
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
@@ -226,9 +226,12 @@ class Npc(living.Living):
                 break
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
-
-        with open(filename, 'r') as fp:
-            obj = json.load(fp, object_hook=instance.from_json)
+        jso = ''
+        with open(filename, 'r+') as f:
+            # this reads in one line at a time from stdin - way faster. Syn
+            for line in f:
+                jso += line
+        obj = json.loads(jso, object_hook=instance.from_json)
         if isinstance(obj, Npc):
             # This just ensures that all items the player has are actually loaded.
             if obj.inventory:

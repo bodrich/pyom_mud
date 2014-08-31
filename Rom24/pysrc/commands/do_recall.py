@@ -31,14 +31,14 @@ def do_recall(ch, argument):
     if victim:
         skill = ch.get_skill("recall")
         if random.randint(1, 99) < 80 * skill / 100:
-            if ch.is_pc():
+            if ch.is_pc:
                 ch.check_improve( "recall", False, 6)
             state_checks.WAIT_STATE(ch, 4)
             ch.send("You failed!.\n")
             return
         lose = 25 if ch.desc else 50
         update.gain_exp(ch, 0 - lose)
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve( "recall", True, 4)
         ch.send("You recall from combat!  You lose %d exps.\n" % lose)
         fight.stop_fighting(ch, True)
