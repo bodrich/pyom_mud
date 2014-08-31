@@ -585,19 +585,23 @@ def con_read_motd(self):
         school = instance.rooms[school_id]
         school.put(ch)
         ch.do_help("newbie info")
-
-    if ch._environment in instance.global_instances.keys() and not ch.level == 0:
-        room = instance.global_instances.get(ch._environment, None)
-        if room and ch._environment != room.instance_id:
-            room.put(ch)
-    elif ch.is_immortal() and not ch.level == 0:
-        to_instance_id = instance.instances_by_room[merc.ROOM_VNUM_CHAT][0]
-        to_instance = instance.rooms[to_instance_id]
-        to_instance.put(ch)
     else:
-        to_instance_id = instance.instances_by_room[merc.ROOM_VNUM_TEMPLE][0]
-        to_instance = instance.rooms[to_instance_id]
-        to_instance.put(ch)
+        if ch._environment in instance.global_instances.keys():
+            room = instance.global_instances.get(ch._environment, None)
+            if room and ch._environment == room.instance_id:
+                room.put(ch)
+        elif ch._saved_room_vnum:
+            room_id = instance.instances_by_room.get(ch._saved_room_vnum, None)[0]
+            if room_id:
+                instance.global_instances[room_id].put(ch)
+        elif ch.is_immortal() and not ch.level == 0:
+            to_instance_id = instance.instances_by_room[merc.ROOM_VNUM_CHAT][0]
+            to_instance = instance.rooms[to_instance_id]
+            to_instance.put(ch)
+        else:
+            to_instance_id = instance.instances_by_room[merc.ROOM_VNUM_TEMPLE][0]
+            to_instance = instance.rooms[to_instance_id]
+            to_instance.put(ch)
 
     handler_game.act("$n has entered the game.", ch, None, None, merc.TO_ROOM)
     ch.do_look("auto")

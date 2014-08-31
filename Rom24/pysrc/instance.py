@@ -307,8 +307,6 @@ def save():
             continue
         it.save(force=True)
     logger.boot('Items saved in %.3f seconds', (time.time() - data_save_time))
-
-    logger.boot('Done. Total time was %.3f seconds', (time.time() - start_save_time))
     
 
 def load():
