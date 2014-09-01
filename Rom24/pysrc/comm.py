@@ -258,18 +258,24 @@ def is_reconnecting(d, name):
 def game_loop(server):
     from update import update_handler
     from pyom import startup_time
-    #import sysutils
+    import sys_utils
     global done
+
+    start_snapshot = sys_utils.ResourceSnapshot()
+    logger.boot(start_snapshot.log_data())
 
     db.boot_db()
 
     boot_time = time.time()
-    #boot_snapshot = sysutils.ResourceSnapshot()
-    #logger.boot(boot_snapshot.log_data())
+    boot_snapshot = sys_utils.ResourceSnapshot()
+    logger.boot(boot_snapshot.log_data())
 
     logger.boot('Pyom database booted in %.3f seconds', (boot_time - startup_time))
     logger.boot("Pyom is ready to rock on port %d", server.port)
     instance.save()
+
+    ready_snapshot = sys_utils.ResourceSnapshot()
+    logger.boot(ready_snapshot.log_data())
 
     done = False
     while not done:
