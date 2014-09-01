@@ -42,6 +42,7 @@ import logging
 logger = logging.getLogger()
 
 import settings
+import time
 
 '''For the instance dicts, we are not going to make another pointer, or copy, of
 the original entity. We are going to alias, or bind, the specific entity
@@ -106,20 +107,32 @@ instances_by_player = {}
 # Things to omit from instances that are in templates.
 not_to_instance = []
 
+
 def isnamedtuple(obj):
     """
     Named Tuples look, to python, like a normal tuple, so we have to poke around
     their innards a bit to see if they're actually the fancy version.
+    -Updated by Syn,
+    we need to account for namedtuples that are created without using anamedtuple._make()
+    The check can now handle both scenarios, and will NOT hit positive on tuples or other types.
 
     :param obj: potential namedtuple container
     :type obj:
     :return: True if obj is a namedtuple
     :rtype: bool
     """
-    return isinstance(obj, tuple) and \
-           hasattr(obj, '_fields') and \
-           hasattr(obj, '_asdict') and \
-           callable(obj._asdict)
+    b = type(obj).__bases__
+    if len(b) != 1:
+        return False
+    f = getattr(obj, '_fields', None)
+    if not isinstance(f, tuple):
+        return False
+    elif not hasattr(obj, '_asdict'):
+        return False
+    elif not callable(obj._asdict):
+        return False
+    else:
+        return True
 
 
 def to_json(data):
@@ -231,7 +244,10 @@ def from_json(data):
                 class_name = found[0][1]
 
                 if module_name != '' and class_name != '':
-                    module_ref = importlib.import_module(module_name)
+                    if data[k].get('import_module', None):
+                        module_ref = importlib.import_module(data[k]['import_module'])
+                    else:
+                        module_ref = importlib.import_module(module_name)
                     class_ref = getattr(module_ref, class_name)
                     if hasattr(class_ref, 'from_json'):
                         return class_ref.from_json(data, from_json)
@@ -242,6 +258,8 @@ def from_json(data):
 
 
 def save():
+    start_save_time = time.time()
+
     os.makedirs(settings.INSTANCE_DIR, 0o755, True)
     filename = os.path.join(settings.INSTANCE_DIR, 'list.json')
     tmp_dict = {}
@@ -253,18 +271,31 @@ def save():
     with open(filename, 'w') as fp:
         json.dump({'max_instance_id': max_instance_id, 'data': tmp_dict}, fp, default=to_json, indent=4, sort_keys=True)
 
+    data_save_time = time.time()
     logger.boot('Saving area data... %d areas', len(areas))
     for i in areas:
         areas[i].save(force=True)
+    logger.boot('Areas saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
     logger.boot('Saving room data... %d rooms', len(rooms))
     for i in rooms:
         rooms[i].save(force=True)
-    logger.boot('Saving npc data... %d npcs', len(npcs))
+    logger.boot('Rooms saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
+    logger.boot('Saving NPC data... %d npcs', len(npcs))
     for i in npcs:
         npcs[i].save(force=True)
+    logger.boot('NPCs saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
     logger.boot('Saving player data... %d players', len(players))
     for i in players:
         players[i].save(force=True)
+    logger.boot('Players saved in %.3f seconds', (time.time() - data_save_time))
+
+    data_save_time = time.time()
     logger.boot('Saving item data... %d items', len(items))
     for i in items:
         it = items[i]
@@ -275,8 +306,8 @@ def save():
         if it.in_item is not None:
             continue
         it.save(force=True)
-    logger.boot('Done.')
-
+    logger.boot('Items saved in %.3f seconds', (time.time() - data_save_time))
+    
 
 def load():
     filename = os.path.join(settings.INSTANCE_DIR, 'list.json')
@@ -287,7 +318,7 @@ def load():
         global global_instances
         max_instance_id = tmp_dict['max_instance_id']
         import importlib
-        for k,v in tmp_dict['data']:
+        for k, v in tmp_dict['data']:
             module_ref = importlib.import_module(v[0])
             class_ref = getattr(module_ref, v[1])
             if hasattr(class_ref, 'load'):

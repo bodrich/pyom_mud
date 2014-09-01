@@ -75,7 +75,7 @@ def init_monitoring():
     init_file('game_utils.py', ['game_utils'])
     init_file('pyprogs.py', ['pyprogs'])
     init_file('affects.py', ['affects'])
-    init_file('effects.py', ['effects'])
+    init_file('special_effects.py', ['special_effects'])
     init_file('fight.py', ['fight'])
     init_directory(os.path.join('commands'))
     init_directory(os.path.join('spells'))

@@ -1,7 +1,7 @@
 import random
 
 import const
-import effects
+import special_effects
 import fight
 import game_utils
 import handler_game
@@ -22,10 +22,10 @@ def spell_acid_breath(sn, level, ch, victim, target):
     dam = max(hp_dam + dice_dam // 10, dice_dam + hp_dam // 10)
 
     if handler_magic.saves_spell(level, victim, merc.DAM_ACID):
-        effects.acid_effect(victim, level // 2, dam // 4, merc.TARGET_CHAR)
+        special_effects.acid_effect(victim, level // 2, dam // 4, merc.TARGET_CHAR)
         fight.damage(ch, victim, dam // 2, sn, merc.DAM_ACID, True)
     else:
-        effects.acid_effect(victim, level, dam, merc.TARGET_CHAR)
+        special_effects.acid_effect(victim, level, dam, merc.TARGET_CHAR)
         fight.damage(ch, victim, dam, sn, merc.DAM_ACID, True)
 
 

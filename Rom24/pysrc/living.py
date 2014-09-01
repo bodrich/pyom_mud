@@ -151,9 +151,9 @@ class Fight:
         self.daze = 0
         self.hit = 20
         self.max_hit = 20
-        self.imm_flags = bit.Bit(flags=tables.imm_flags)
-        self.res_flags = bit.Bit(flags=tables.imm_flags)
-        self.vuln_flags = bit.Bit(flags=tables.imm_flags)
+        self.imm_flags = bit.Bit(flagset_name="imm_flags")
+        self.res_flags = bit.Bit(flagset_name="imm_flags")
+        self.vuln_flags = bit.Bit(flagset_name="imm_flags")
 
     @property
     def fighting(self):
@@ -238,7 +238,7 @@ class Communication:
     def __init__(self):
         super().__init__()
         self.reply = 0
-        self.comm = bit.Bit(merc.COMM_COMBINE | merc.COMM_PROMPT, tables.comm_flags)
+        self.comm = bit.Bit(merc.COMM_COMBINE | merc.COMM_PROMPT, flagset_name="comm_flags")
 
 
 class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
@@ -250,9 +250,10 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
         self.id = 0
         self.version = 5
         self.level = 0
-        self.act = bit.Bit(merc.PLR_NOSUMMON, [tables.act_flags, tables.plr_flags])
         self._race = 'human'
         self._guild = None
+        self.form = bit.Bit(flagset_name="form_flags")
+        self.parts = bit.Bit(flagset_name="part_flags")
         self.sex = 0
         self.level = 0
         # stats */
@@ -803,7 +804,7 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
         elif sn not in const.skill_table:
             logger.error("BUG: Bad sn %s in get_skill." % sn)
             skill = 0
-        elif self.is_pc():
+        elif self.is_pc:
             if self.level < const.skill_table[sn].skill_level[self.guild.name] \
                     or sn not in self.learned:
                 skill = 0
@@ -854,7 +855,7 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
                 skill //= 2
             else:
                 skill = 2 * skill // 3
-        if self.is_pc() \
+        if self.is_pc \
                 and self.condition[merc.COND_DRUNK] > 10:
             skill = 9 * skill // 10
 

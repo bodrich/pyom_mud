@@ -268,17 +268,32 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
         pathname = os.path.join(top_dir, '%d-%s' % (area_number, self.in_area.name), 'rooms')
 
         os.makedirs(pathname, 0o755, True)
-        filename = os.path.join(pathname, '%d-room.json' % number)
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            filename = os.path.join(pathname, '%d-room%s' % (number, settings.SAVE_FORMAT['Pickle'][1]))
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            filename = os.path.join(pathname, '%d-room%s' % (number, settings.SAVE_FORMAT['JSON'][1]))
+        else:
+            filename = os.path.join(pathname, '%d-room.json' % (number,))
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
-            with open(filename, 'w') as fp:
-                fp.write(js)
+            if settings.SAVE_FORMAT['JSON'][0]:
+                #json version
+                with open(filename, 'w') as fp:
+                    fp.write(js)
+            else:
+                #pickle version
+                import pickle
+                with open(filename, 'wb') as fp:
+                    pickle.dump(js, fp, pickle.HIGHEST_PROTOCOL)
 
         if self.inventory:
             for item_id in self.items[:]:
+                if item_id not in instance.items:
+                    logger.error('Item %d is in Room %d\'s inventory, but does not exist?', item_id, self.instance_id)
+                    continue
                 item = instance.items[item_id]
                 item.save(in_inventory=True, force=force)
 
@@ -296,7 +311,12 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
         else:
             raise ValueError('To load a Room, you must provide either a VNUM or an Instance_ID!')
 
-        target_file = '%d-room.json' % number
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            target_file = '%d-room%s' % (number, settings.SAVE_FORMAT['Pickle'][1])
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            target_file = '%d-room%s' % (number, settings.SAVE_FORMAT['JSON'][1])
+        else:
+            target_file = '%d-room.json' % (number,)
         filename = None
         for a_path, a_directory, i_files in os.walk(pathname):
             if target_file in i_files:
@@ -304,9 +324,19 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
                 break
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
-
-        with open(filename, 'r') as fp:
-            obj = json.load(fp, object_hook=instance.from_json)
+        jso = ''
+        if settings.SAVE_FORMAT['JSON'][0]:
+            #json version
+            with open(filename, 'r+') as f:
+                #this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+        else:
+            #pickle version
+            import pickle
+            with open(filename, 'rb') as f:
+                jso = pickle.load(f)
+        obj = json.loads(jso, object_hook=instance.from_json)
         if isinstance(obj, Room):
             # Inventory is already loaded by Room's __init__ function.
             return obj

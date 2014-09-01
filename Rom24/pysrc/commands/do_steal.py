@@ -68,7 +68,7 @@ def do_steal(ch, argument):
             victim.do_yell(buf)
         if not ch.is_npc():
             if victim.is_npc():
-                if ch.is_pc():
+                if ch.is_pc:
                     ch.check_improve("steal", False, 2)
                 fight.multi_hit(victim, ch, merc.TYPE_UNDEFINED)
             else:
@@ -95,7 +95,7 @@ def do_steal(ch, argument):
             ch.send("Bingo!  You got %d silver coins.\n" % silver)
         else:
             ch.send("Bingo!  You got %d silver and %d gold coins.\n" % (silver, gold))
-        if ch.is_pc():
+        if ch.is_pc:
             ch.check_improve( "steal", True, 2)
         return
     item = victim.get_item_carry(arg1, ch)
@@ -114,7 +114,7 @@ def do_steal(ch, argument):
     item.get()
     ch.put(item)
     handler_game.act("You pocket $p.", ch, item, None, merc.TO_CHAR)
-    if ch.is_pc():
+    if ch.is_pc:
         ch.check_improve( "steal", True, 2)
     ch.send("Got it!\n")
     return

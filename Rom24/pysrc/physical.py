@@ -13,8 +13,6 @@ class Physical:
         self.short_descr = ""
         self.long_descr = ""
         self.description = ""
-        self.form = bit.Bit(flags=tables.form_flags)
-        self.parts = bit.Bit(flags=tables.part_flags)
         self.size = 0
         self.material = ""
         self.weight = 0

@@ -160,14 +160,26 @@ class Area(instance.Instancer, type_bypass.ObjectType, environment.Environment):
         pathname = os.path.join(top_dir, '%d-%s' % (number, self.name))
 
         os.makedirs(pathname, 0o755, True)
-        filename = os.path.join(pathname, '%d-area.json' % number)
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            filename = os.path.join(pathname, '%d-area%s' % (number, settings.SAVE_FORMAT['Pickle'][1]))
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            filename = os.path.join(pathname, '%d-area%s' % (number, settings.SAVE_FORMAT['JSON'][1]))
+        else:
+            filename = os.path.join(pathname, '%d-area.json' % (number,))
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
-            with open(filename, 'w') as fp:
-                fp.write(js)
+            if settings.SAVE_FORMAT['JSON'][0]:
+                #json version
+                with open(filename, 'w') as fp:
+                    fp.write(js)
+            else:
+                #pickle version
+                import pickle
+                with open(filename, 'wb') as fp:
+                    pickle.dump(js, fp, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def load(cls, index: int=None, instance_id: int=None):
@@ -181,7 +193,12 @@ class Area(instance.Instancer, type_bypass.ObjectType, environment.Environment):
             top_dir = settings.AREA_DIR
             number = index
 
-        target_file = '%d-area.json' % number
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            target_file = '%d-area%s' % (number, settings.SAVE_FORMAT['Pickle'][1])
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            target_file = '%d-area%s' % (number, settings.SAVE_FORMAT['JSON'][1])
+        else:
+            target_file = '%d-area.json' % (number,)
         filename = None
         for a_path, a_directory, i_files in os.walk(top_dir):
             if target_file in i_files:
@@ -189,9 +206,19 @@ class Area(instance.Instancer, type_bypass.ObjectType, environment.Environment):
                 break
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
-
-        with open(filename, 'r') as fp:
-            obj = json.load(fp, object_hook=instance.from_json)
+        jso = ''
+        if settings.SAVE_FORMAT['JSON'][0]:
+            #json version
+            with open(filename, 'r+') as f:
+                #this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+        else:
+            #pickle version
+            import pickle
+            with open(filename, 'rb') as f:
+                jso = pickle.load(f)
+        obj = json.loads(jso, object_hook=instance.from_json)
         if isinstance(obj, Area):
             return obj
         else:
@@ -238,7 +265,7 @@ class Exit:
         self.name = ""
         self.to_room_vnum = None
         self.to_room = None
-        self.exit_info = bit.Bit(flags=tables.exit_flags)
+        self.exit_info = bit.Bit(flagset_name="exit_flags")
         self.key = None
         self.key_vnum = None
         self.keyword = ""
@@ -249,6 +276,9 @@ class Exit:
             [setattr(self, k, copy.deepcopy(v)) for k, v in template.__dict__.items()]
             if self.to_room_vnum != -1 and not None and self.to_room_vnum in instance.instances_by_room:
                 self.to_room = instance.instances_by_room[self.to_room_vnum][0]
+            elif self.to_room_vnum == -1 or None:
+                #This is a case where
+                self.to_room = None
             elif self.to_room_vnum not in instance.instances_by_room:
                 self.is_broken = True
                 logger.error("Exit(): bad to_room_vnum %d.", self.to_room_vnum)

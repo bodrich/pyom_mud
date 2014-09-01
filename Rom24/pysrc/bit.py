@@ -5,6 +5,7 @@ logger = logging.getLogger()
 
 import game_utils
 import state_checks
+import tables
 
 
 class Bit:
@@ -28,7 +29,7 @@ class Bit:
     the name OR numerical value, and you can still use the numbers if you
     like.
     """
-    def __init__(self, default: int=0, flags: OrderedDict=None):
+    def __init__(self, default: int=0, flags: str=None, flagset_name: str=None):
         """
         The constructor allows you to specify the default value, as
         well as providing an ordered dict which will be used for
@@ -42,7 +43,13 @@ class Bit:
         :rtype:
         """
         self.bits = default
-        self._flags = flags
+        self.flagset_name = flagset_name
+
+        if flagset_name is not None:
+            self._flags = tables.bit_flags[flagset_name]
+        elif flags is not None:
+            self._flags = flags
+
 
     def __add__(self, other):
         """
@@ -54,7 +61,7 @@ class Bit:
         :return: A new Bit() object with the value added.
         :rtype: Bit
         """
-        return Bit(self.bits + self.from_name(other), self.flags)
+        return Bit(self.bits + self.from_name(other), flags=self.flags)
 
     def __radd__(self, other):
         """
@@ -68,7 +75,7 @@ class Bit:
         :return: A new Bit() object with the value added.
         :rtype: Bit
         """
-        return Bit(self.from_name(other) + self.bits, self.flags)
+        return Bit(self.from_name(other) + self.bits, flags=self.flags)
 
     def __iadd__(self, other):
         """
@@ -84,10 +91,10 @@ class Bit:
         return self
 
     def __sub__(self, other):
-        return Bit(self.bits - self.from_name(other), self.flags)
+        return Bit(self.bits - self.from_name(other), flags=self.flags)
 
     def __rsub__(self, other):
-        return Bit(self.from_name(other) - self.bits, self.flags)
+        return Bit(self.from_name(other) - self.bits, flags=self.flags)
 
     def __isub__(self, other):
         self.bits -= self.from_name(other)
@@ -95,12 +102,12 @@ class Bit:
 
     def __mul__(self, other):
         if isinstance(other, int):
-            return Bit(self.bits * other, self.flags)
+            return Bit(self.bits * other, flags=self.flags)
         raise TypeError('You can only multiply a Bit() value by an integer, not a ' + repr(other))
 
     def __rmul__(self, other):
         if isinstance(other, int):
-            return Bit(other * self.bits, self.flags)
+            return Bit(other * self.bits, flags=self.flags)
         raise TypeError('You can only multiply a Bit() value by an integer, not a ' + repr(other))
 
     def __imul__(self, other):
@@ -111,12 +118,12 @@ class Bit:
 
     def __truediv__(self, other):
         if isinstance(other, int):
-            return Bit(self.bits // other, self.flags)
+            return Bit(self.bits // other, flags=self.flags)
         raise TypeError('You can only divide a Bit() value by an integer, not a ' + repr(other))
 
     def __rtruediv__(self, other):
         if isinstance(other, int):
-            return Bit(other // self.bits, self.flags)
+            return Bit(other // self.bits, flags=self.flags)
         raise TypeError('You can only divide a Bit() value by an integer, not a ' + repr(other))
 
     def __itruediv__(self, other):
@@ -127,12 +134,12 @@ class Bit:
 
     def __floordiv__(self, other):
         if isinstance(other, int):
-            return Bit(self.bits // other, self.flags)
+            return Bit(self.bits // other, flags=self.flags)
         raise TypeError('You can only divide a Bit() value by an integer, not a ' + repr(other))
 
     def __rfloordiv__(self, other):
         if isinstance(other, int):
-            return Bit(other // self.bits, self.flags)
+            return Bit(other // self.bits, flags=self.flags)
         raise TypeError('You can only divide a Bit() value by an integer, not a ' + repr(other))
 
     def __ifloordiv__(self, other):
@@ -143,12 +150,12 @@ class Bit:
 
     def __mod__(self, other):
         if isinstance(other, int):
-            return Bit(self.bits % other, self.flags)
+            return Bit(self.bits % other, flags=self.flags)
         raise TypeError('You can only get the integer modulo of a Bit() value, not a ' + repr(other))
 
     def __rmod__(self, other):
         if isinstance(other, int):
-            return Bit(other % self.bits, self.flags)
+            return Bit(other % self.bits, flags=self.flags)
         raise TypeError('You can only get the integer modulo of a Bit() value, not a ' + repr(other))
 
     def __imod__(self, other):
@@ -159,12 +166,12 @@ class Bit:
 
     def __pow__(self, power, modulo=None):
         if isinstance(power, int):
-            return Bit(self.bits ** power, self.flags)
+            return Bit(self.bits ** power, flags=self.flags)
         raise TypeError('You can only raise a Bit() value to an integer power, not a ' + repr(power))
 
     def __rpow__(self, power, modulo=None):
         if isinstance(power, int):
-            return Bit(power ** self.bits, self.flags)
+            return Bit(power ** self.bits, flags=self.flags)
         raise TypeError('You can only raise a Bit() value to an integer power, not a ' + repr(power))
 
     def __ipow__(self, power, modulo=None):
@@ -175,12 +182,12 @@ class Bit:
 
     def __lshift__(self, other):
         if isinstance(other, int):
-            return Bit(self.bits << other, self.flags)
+            return Bit(self.bits << other, flags=self.flags)
         raise TypeError('You can only shift a Bit() value by an integer, not a ' + repr(other))
 
     def __rlshift__(self, other):
         if isinstance(other, int):
-            return Bit(other << self.bits, self.flags)
+            return Bit(other << self.bits, flags=self.flags)
         raise TypeError('You can only shift a Bit() value by an integer, not a ' + repr(other))
 
     def __ilshift__(self, other):
@@ -191,12 +198,12 @@ class Bit:
 
     def __rshift__(self, other):
         if isinstance(other, int):
-            return Bit(self.bits >> other, self.flags)
+            return Bit(self.bits >> other, flags=self.flags)
         raise TypeError('You can only shift a Bit() value by an integer, not a ' + repr(other))
 
     def __rrshift__(self, other):
         if isinstance(other, int):
-            return Bit(other >> self.bits, self.flags)
+            return Bit(other >> self.bits, flags=self.flags)
         raise TypeError('You can only shift a Bit() value by an integer, not a ' + repr(other))
 
     def __irshift__(self, other):
@@ -206,30 +213,30 @@ class Bit:
         raise TypeError('You can only shift a Bit() value by an integer, not a ' + repr(other))
 
     def __and__(self, other):
-        return Bit(self.bits & self.from_name(other), self.flags)
+        return Bit(self.bits & self.from_name(other), flags=self.flags)
 
     def __rand__(self, other):
-        return Bit(self.from_name(other) & self.bits, self.flags)
+        return Bit(self.from_name(other) & self.bits, flags=self.flags)
 
     def __iand__(self, other):
         self.bits &= self.from_name(other)
         return self
 
     def __xor__(self, other):
-        return Bit(self.bits ^ self.from_name(other), self.flags)
+        return Bit(self.bits ^ self.from_name(other), flags=self.flags)
 
     def __rxor__(self, other):
-        return Bit(self.from_name(other) ^ self.bits, self.flags)
+        return Bit(self.from_name(other) ^ self.bits, flags=self.flags)
 
     def __ixor__(self, other):
         self.bits ^= self.from_name(other)
         return self
 
     def __or__(self, other):
-        return Bit(self.bits | self.from_name(other), self.flags)
+        return Bit(self.bits | self.from_name(other), flags=self.flags)
 
     def __ror__(self, other):
-        return Bit(self.from_name(other) | self.bits, self.flags)
+        return Bit(self.from_name(other) | self.bits, flags=self.flags)
 
     def __ior__(self, other):
         self.bits |= self.from_name(other)
@@ -239,13 +246,13 @@ class Bit:
         return True if self.bits else False
 
     def __neg__(self):
-        return Bit(-self.bits, self.flags)
+        return Bit(-self.bits, flags=self.flags)
 
     def __pos__(self):
-        return Bit(+self.bits, self.flags)
+        return Bit(+self.bits, flags=self.flags)
 
     def __abs__(self):
-        return Bit(abs(self.bits), self.flags)
+        return Bit(abs(self.bits), flags=self.flags)
 
     def __int__(self):
         return self.bits
@@ -340,7 +347,7 @@ class Bit:
         return {
             cls_name: {
                 'bits': outer_encoder(self.bits),
-                'flags': outer_encoder(self.flags),
+                'flagset_name': outer_encoder(self.flagset_name),
             }
         }
 
@@ -363,5 +370,5 @@ class Bit:
         cls_name = '__class__/' + __name__ + '.' + cls.__name__
         if cls_name in data:
             return cls(default=outer_decoder(data[cls_name]['bits']),
-                       flags=outer_decoder(data[cls_name]['flags']))
+                       flagset_name=outer_decoder(data[cls_name]['flagset_name']))
         return data

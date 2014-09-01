@@ -35,6 +35,7 @@ import json
 import os
 import copy
 import hashlib
+import pickle
 import time
 import logging
 
@@ -460,7 +461,10 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         if self.environment:
             if self.equipped_to:
                 self.in_living.raw_unequip(self)
-            self.environment.get(self)
+            if self.environment.is_pc:
+                self.environment.get(self, no_save=True)
+            else:
+                self.environment.get(self)
             for item_id in self.inventory[:]:
                 if self.instance_id not in instance.items:
                     logger.error("Extract_obj: obj %d not found in obj_instance dict." % self.instance_id)
@@ -539,14 +543,26 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
                 raise ValueError('Player items must specify if they are equipped or in their inventory!')
 
         os.makedirs(pathname, 0o755, True)
-        filename = os.path.join(pathname, '%d-item.json' % number)
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            filename = os.path.join(pathname, '%d-item%s' % (number, settings.SAVE_FORMAT['Pickle'][1]))
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            filename = os.path.join(pathname, '%d-item%s' % (number, settings.SAVE_FORMAT['JSON'][1]))
+        else:
+            filename = os.path.join(pathname, '%d-item.json' % (number,))
         logger.info('Saving %s', filename)
-        js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
+        js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
-            with open(filename, 'w') as fp:
-                fp.write(js)
+            if settings.SAVE_FORMAT['JSON'][0]:
+                #json version
+                with open(filename, 'w') as fp:
+                    fp.write(js)
+            else:
+                #pickle version
+                import pickle
+                with open(filename, 'wb') as fp:
+                    pickle.dump(js, fp, pickle.HIGHEST_PROTOCOL)
 
         if self.inventory:
             for item_id in self.inventory[:]:
@@ -562,7 +578,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
             raise ValueError('You must provide either a vnum or an instance_id!')
         if vnum and instance_id:
             raise ValueError('You must provide either a vnum or an instance_id, not BOTH!')
-        if instance_id and instance_id in instance.items:
+        if instance_id and (instance_id in instance.items.keys()):
             logger.warn('Instance %d of item already loaded!', instance_id)
             return
 
@@ -576,7 +592,12 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
         else:
             pathname = os.path.join(settings.PLAYER_DIR, player_name[0].lower(), player_name.capitalize())
             number = instance_id
-        target_file = '%d-item.json' % number
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            target_file = '%d-item%s' % (number, settings.SAVE_FORMAT['Pickle'][1])
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            target_file = '%d-item%s' % (number, settings.SAVE_FORMAT['JSON'][1])
+        else:
+            target_file = '%d-item.json' % (number,)
         filename = None
         for a_path, a_directory, i_files in os.walk(pathname):
             if target_file in i_files:
@@ -584,9 +605,19 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
                 break
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
-
-        with open(filename) as fp:
-            obj = json.load(fp, object_hook=instance.from_json)
+        jso = ''
+        if settings.SAVE_FORMAT['JSON'][0]:
+            #json version
+            with open(filename, 'r+') as f:
+                #this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+        else:
+            #pickle version
+            import pickle
+            with open(filename, 'rb') as f:
+                jso = pickle.load(f)
+        obj = json.loads(jso, object_hook=instance.from_json)
         if not isinstance(obj, Items):
             raise TypeError('Could not load instance %r!' % number)
         if obj.inventory:

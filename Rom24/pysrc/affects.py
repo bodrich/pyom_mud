@@ -49,7 +49,7 @@ class Affects:
     def __init__(self, **kwargs):
         super().__init__()
         self.affected = []
-        self.affected_by = bit.Bit(flags=tables.affect_flags)
+        self.affected_by = bit.Bit(flagset_name="affect_flags")
         if kwargs:
             [setattr(self, k, copy.deepcopy(v)) for k, v in kwargs.items()]
 

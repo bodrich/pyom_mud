@@ -36,7 +36,7 @@ class Environment:
     def environment(self, input_value):
         if not input_value:
             self._environment = None
-        elif type(input_value) is int:
+        elif isinstance(input_value, int):
             self._environment = input_value
         else:
             raise TypeError('Environment trying to be set with non integer value %r' % type(input_value))

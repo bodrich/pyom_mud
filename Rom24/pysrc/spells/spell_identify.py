@@ -1,4 +1,5 @@
 import const
+import instance
 import merc
 from merc import affect_loc_name, affect_bit_name, extra_bit_name, imm_bit_name, weapon_bit_name, cont_bit_name
 
