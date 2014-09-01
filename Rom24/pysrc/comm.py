@@ -270,7 +270,7 @@ def game_loop(server):
     logger.boot(boot_snapshot.log_data())
     logger.boot('Pyom database booted in %.3f seconds', (boot_snapshot.current_time(True) -
                                                          start_snapshot.current_time(True)))
-    #instance.save()
+    instance.save()
 
     ready_snapshot = sys_utils.ResourceSnapshot()
     logger.boot(ready_snapshot.log_data())
