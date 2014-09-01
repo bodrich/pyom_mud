@@ -145,26 +145,46 @@ class ResourceSnapshot:
         else:
             return self._proc_io_read
 
-    def log_data(self):
+    def log_data(self, previous=None):
         """
         Returns a string that has been formatted for output through
         the logging system, as we've defined it in all our code.
         If you change the output formatting of the logs, you should
         also change this code to match.
 
+        :param previous: Optional earlier snapshot to compare against for delta values.
+        :type previous: ResourceSnapshot
         :return:
         """
-        results = (
-            'Snapshot time: %s' % (self.current_time()),
-            'System booted at: %s' % (self.system_boot_time()),
-            'System has %dM of %dM available (%.3f%% used)' % (self.system_memory_available(),
-                                                               self.system_memory_total(),
-                                                               self.system_memory_percent_used()),
-            'Driver started at: %s' % (self.process_start_time()),
-            'Driver is currently using %dM of RAM' % (self.process_memory()),
-            'Driver has performed %d read and %d write I/O operations.' % (self.process_io(),
-                                                                           self.process_io(True)),
-        )
+        if not previous:
+            results = (
+                'Snapshot time: %s' % (self.current_time()),
+                'System booted at: %s' % (self.system_boot_time()),
+                'System has %dM of %dM available (%.3f%% used)' % (self.system_memory_available(),
+                                                                   self.system_memory_total(),
+                                                                   self.system_memory_percent_used()),
+                'Driver started at: %s' % (self.process_start_time()),
+                'Driver is currently using %dM of RAM' % (self.process_memory()),
+                'Driver has performed %d read and %d write I/O operations.' % (self.process_io(),
+                                                                               self.process_io(True)),
+            )
+        else:
+            results = (
+                'Snapshot time: %s' % (self.current_time()),
+                'Previous snapshot: %s' % (previous.current_time()),
+                'System booted at: %s' % (self.system_boot_time()),
+                'System has %dM of %dM available (%.3f%% used)' % (self.system_memory_available(),
+                                                                   self.system_memory_total(),
+                                                                   self.system_memory_percent_used()),
+                'System footprint change: %dK' % ((self.system_memory_available(True) -
+                                                   previous.system_memory_available(True)) // 1024),
+                'Driver started at: %s' % (self.process_start_time()),
+                'Driver is currently using %dM of RAM' % (self.process_memory()),
+                'Driver footprint change: %dK' % ((self.process_memory(True) -
+                                                   previous.process_memory(True)) // 1024),
+                'Driver has performed %d additional read and %d additional write I/O operations.' %
+                (self.process_io() - previous.process_io(), self.process_io(True) - previous.process_io(True)),
+            )
         spaces = '\n' + ' ' * 51
         output = spaces.join(results)
         return output
