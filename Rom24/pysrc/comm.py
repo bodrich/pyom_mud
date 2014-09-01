@@ -257,7 +257,7 @@ def is_reconnecting(d, name):
 
 def game_loop(server):
     from update import update_handler
-    from pyom import startup_time
+    #from pyom import startup_time
     import sys_utils
     global done
 
@@ -266,19 +266,29 @@ def game_loop(server):
 
     db.boot_db()
 
-    boot_time = time.time()
     boot_snapshot = sys_utils.ResourceSnapshot()
     logger.boot(boot_snapshot.log_data())
-
-    logger.boot('Pyom database booted in %.3f seconds', (boot_time - startup_time))
-    logger.boot("Pyom is ready to rock on port %d", server.port)
-    instance.save()
+    logger.boot('Pyom database booted in %.3f seconds', (boot_snapshot.current_time(True) -
+                                                         start_snapshot.current_time(True)))
+    #instance.save()
 
     ready_snapshot = sys_utils.ResourceSnapshot()
     logger.boot(ready_snapshot.log_data())
+    logger.boot('Pyom database written in %.3f seconds', (ready_snapshot.current_time(True) -
+                                                          boot_snapshot.current_time(True)))
 
+    logger.boot("Pyom is ready to rock on port %d", server.port)
     done = False
+    slice_time = 1.0 / merc.PULSE_PER_SECOND
     while not done:
+        loop_time = time.time()
         server.poll()
         process_input()
         update_handler()
+        time_spent = time.time() - loop_time
+        if time_spent < slice_time:
+            nap_time = slice_time - time_spent
+            if nap_time > 0.0:
+                time.sleep(nap_time)
+            else:
+                logger.warn('Exceeded pulse time by %.3f seconds!', abs(nap_time))
