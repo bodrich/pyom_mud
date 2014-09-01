@@ -182,14 +182,26 @@ class Npc(living.Living):
         pathname = os.path.join(top_dir, '%d-%s' % (area_number, self.in_area.name), 'npcs')
 
         os.makedirs(pathname, 0o755, True)
-        filename = os.path.join(pathname, '%d-npc.json' % number)
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            filename = os.path.join(pathname, '%d-npc%s' % (number, settings.SAVE_FORMAT['Pickle'][1]))
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            filename = os.path.join(pathname, '%d-npc%s' % (number, settings.SAVE_FORMAT['JSON'][1]))
+        else:
+            filename = os.path.join(pathname, '%d-npc.json' % (number,))
         logger.info('Saving %s', filename)
         js = json.dumps(self, default=instance.to_json, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
-            with open(filename, 'w') as fp:
-                fp.write(js)
+            if settings.SAVE_FORMAT['JSON'][0]:
+                #json version
+                with open(filename, 'w') as fp:
+                    fp.write(js)
+            else:
+                #pickle version
+                import pickle
+                with open(filename, 'wb') as fp:
+                    pickle.dump(js, fp, pickle.HIGHEST_PROTOCOL)
 
         if self.inventory:
             for item_id in self.inventory[:]:
@@ -220,7 +232,12 @@ class Npc(living.Living):
         else:
             raise ValueError('To load an NPC, you must provide either a VNUM or an Instance_ID!')
 
-        target_file = '%d-npc.json' % number
+        if settings.SAVE_FORMAT['Pickle'][0]:
+            target_file = '%d-item%s' % (number, settings.SAVE_FORMAT['Pickle'][1])
+        elif settings.SAVE_FORMAT['JSON'][0]:
+            target_file = '%d-item%s' % (number, settings.SAVE_FORMAT['JSON'][1])
+        else:
+            target_file = '%d-item.json' % (number,)
         filename = None
         for a_path, a_directory, i_files in os.walk(pathname):
             if target_file in i_files:
@@ -229,10 +246,17 @@ class Npc(living.Living):
         if not filename:
             raise ValueError('Cannot find %s' % target_file)
         jso = ''
-        with open(filename, 'r+') as f:
-            # this reads in one line at a time from stdin - way faster. Syn
-            for line in f:
-                jso += line
+        if settings.SAVE_FORMAT['JSON'][0]:
+            #json version
+            with open(filename, 'r+') as f:
+                #this reads in one line at a time from stdin - way faster. Syn
+                for line in f:
+                    jso += line
+        else:
+            #pickle version
+            import pickle
+            with open(filename, 'rb') as f:
+                jso = pickle.load(f)
         obj = json.loads(jso, object_hook=instance.from_json)
         if isinstance(obj, Npc):
             # This just ensures that all items the player has are actually loaded.
