@@ -575,7 +575,6 @@ def con_read_motd(self):
                 update.advance_level(ch, True)
             ch.exp = ch.exp_per_level(ch.points) * max(1, ch.level)
             ch.trust = 0
-            ch.save()
             ch.send('\n\nCongratulations!  As the first player to log into this MUD, you are now\n' +
                     'the IMPLEMENTOR, the sucker in charge, the place where the buck stops.\n' +
                     'Enjoy!\n\n')
@@ -584,6 +583,7 @@ def con_read_motd(self):
         school_id = instance.instances_by_room[merc.ROOM_VNUM_SCHOOL][0]
         school = instance.rooms[school_id]
         school.put(ch)
+        ch.save(force=True)
         ch.do_help("newbie info")
     else:
         if ch._environment in instance.global_instances.keys():

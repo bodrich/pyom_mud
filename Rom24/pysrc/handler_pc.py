@@ -587,7 +587,6 @@ class Pc(living.Living):
                 continue
             else:
                 tmp_dict[k] = v
-
         cls_name = '__class__/' + __name__ + '.' + self.__class__.__name__
         return {cls_name: outer_encoder(tmp_dict)}
 
@@ -623,9 +622,10 @@ class Pc(living.Living):
             fp.write(js)
 
     #player get override to enforce saves, to avoid 'cheat' activities
-    def get(self, instance_object):
+    def get(self, instance_object, no_save=False):
         super().get(instance_object)
-        self.save(force=True)
+        if not no_save:
+            self.save(force=True)
         return instance_object
 
     @classmethod
@@ -663,14 +663,24 @@ class Pc(living.Living):
         self.save_stub(logout)
         pathname = os.path.join(settings.PLAYER_DIR, self.name[0].lower(), self.name.capitalize())
         os.makedirs(pathname, 0o755, True)
-        filename = os.path.join(pathname, 'player.json')
+        if settings.SAVE_FORMAT['JSON'][0]:
+            filename = os.path.join(pathname, 'player.json')
+        else:
+            filename = os.path.join(pathname, 'player.pickle')
         logger.info('Saving %s', filename)
         js = json.dumps(self, default=instance.to_json, indent=4, sort_keys=True)
         md5 = hashlib.md5(js.encode('utf-8')).hexdigest()
         if self._md5 != md5:
             self._md5 = md5
-            with open(filename, 'w') as fp:
-                fp.write(js)
+            if settings.SAVE_FORMAT['JSON'][0]:
+                #json version
+                with open(filename, 'w') as fp:
+                    fp.write(js)
+            else:
+                #pickle version
+                import pickle
+                with open(filename, 'wb') as fp:
+                    pickle.dump(js, fp, pickle.HIGHEST_PROTOCOL)
 
         if self.inventory:
             for item_id in self.inventory[:]:
@@ -692,14 +702,24 @@ class Pc(living.Living):
         if not player_name:
             raise KeyError('Player name is required to load a player!')
         pathname = os.path.join(settings.PLAYER_DIR, player_name[0].lower(), player_name.capitalize())
-        filename = os.path.join(pathname, 'player.json')
+        if settings.SAVE_FORMAT['JSON'][0]:
+            filename = os.path.join(pathname, 'player.json')
+        else:
+            filename = os.path.join(pathname, 'player.pickle')
         if os.path.isfile(filename):
             logger.info('Loading %s player data', player_name)
             jso = ''
-            with open(filename, 'r+') as f:
-                # this reads in one line at a time from stdin - way faster. Syn
-                for line in f:
-                    jso += line
+            if settings.SAVE_FORMAT['JSON'][0]:
+                #json version
+                with open(filename, 'r+') as f:
+                    #this reads in one line at a time from stdin - way faster. Syn
+                    for wline in f:
+                        jso += wline
+            else:
+                #pickle version
+                import pickle
+                with open(filename, 'rb') as f:
+                    jso = pickle.load(f)
             obj = json.loads(jso, object_hook=instance.from_json)
             if isinstance(obj, Pc):
                 obj._last_login = time.time()
