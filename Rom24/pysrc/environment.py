@@ -30,6 +30,10 @@ class Environment:
 
     @property
     def environment(self):
+        #TODO: Remove this once we track down the source. This should never happen.
+        if self._environment == self:
+            logger.error("%s environment is set to itself" % (self.name))
+            self._environment = None
         return instance.global_instances.get(self._environment, None)
 
     @environment.setter

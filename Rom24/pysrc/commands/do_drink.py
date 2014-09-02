@@ -8,6 +8,7 @@ import interp
 import update
 import game_utils
 import handler_game
+import instance
 
 
 def do_drink(ch, argument):

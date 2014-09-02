@@ -9,6 +9,7 @@ import state_checks
 import merc
 import interp
 import fight
+import instance
 
 
 def do_cast(ch, argument):

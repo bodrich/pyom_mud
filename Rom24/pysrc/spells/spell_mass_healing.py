@@ -1,6 +1,7 @@
 import const
 import merc
 import state_checks
+import instance
 
 
 def spell_mass_healing(sn, level, ch, victim, target):

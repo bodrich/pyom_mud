@@ -352,8 +352,8 @@ def get_room_by_vnum(vnum):
 def get_random_room(ch):
     room = None
     while True:
-        room = random.choice(instance.rooms.values())
-        if ch.can_see_room(room) and not room.is_private() \
+        room = random.choice(list(instance.rooms.values()))
+        if ch.can_see_room(room.instance_id) and not room.is_private() \
             and not state_checks.IS_SET(room.room_flags, merc.ROOM_PRIVATE) \
             and not state_checks.IS_SET(room.room_flags, merc.ROOM_SOLITARY) \
             and not state_checks.IS_SET(room.room_flags, merc.ROOM_SAFE) \

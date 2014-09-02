@@ -8,6 +8,7 @@ import merc
 import interp
 import const
 import state_checks
+import instance
 
 
 def do_practice(ch, argument):

@@ -37,6 +37,7 @@ import logging
 logger = logging.getLogger()
 
 from merc import *
+import instance
 import handler_ch
 import handler_item
 import object_creator
@@ -83,6 +84,7 @@ def check_assist(ch, victim):
     for rch_id in ch.in_room.people[:]:
         rch = instance.characters[rch_id]
         if state_checks.IS_AWAKE(rch) and rch.fighting is None:
+
             # quick check for ASSIST_PLAYER */
             if not ch.is_npc() and rch.is_npc() \
                     and rch.off_flags.is_set(ASSIST_PLAYERS) \
@@ -90,38 +92,39 @@ def check_assist(ch, victim):
                 rch.do_emote("screams and attacks!")
                 multi_hit(rch, victim, TYPE_UNDEFINED)
                 continue
-        # PCs next */
-        if not ch.is_npc() or ch.is_affected(AFF_CHARM):
-            if ((not rch.is_npc() and rch.act.is_set(PLR_AUTOASSIST))
-                or rch.is_affected(AFF_CHARM)) \
-                    and ch.is_same_group(rch) \
-                    and not is_safe(rch, victim):
-                multi_hit(rch, victim, TYPE_UNDEFINED)
-                continue
 
-        # now check the NPC cases */
-        if ch.is_npc() and not ch.is_affected(AFF_CHARM):
-            if (rch.is_npc() and rch.off_flags.is_set(ASSIST_ALL)) \
-                    or (rch.is_npc() and rch.group and rch.group == ch.group) \
-                    or (rch.is_npc() and rch.race == ch.race and rch.off_flags.is_set(ASSIST_RACE)) \
-                    or (rch.is_npc() and rch.off_flags.is_set(ASSIST_ALIGN)
-                        and ((rch.is_good() and ch.is_good()) or (rch.is_evil()
-                                                                  and ch.is_evil())
-                             or (rch.is_neutral() and ch.is_neutral()))) \
-                    or (rch.is_npc() and rch.vnum == ch.vnum and rch.off_flags.is_set(ASSIST_VNUM)):
-                if random.randint(0, 1) == 0:
+            # PCs next */
+            if not ch.is_npc() or ch.is_affected(AFF_CHARM):
+                if ((not rch.is_npc() and rch.act.is_set(PLR_AUTOASSIST))
+                    or rch.is_affected(AFF_CHARM)) \
+                        and ch.is_same_group(rch) \
+                        and not is_safe(rch, victim):
+                    multi_hit(rch, victim, TYPE_UNDEFINED)
                     continue
 
-                target = None
-                number = 0
-                for vch_id in ch.in_room.people[:]:
-                    vch = instance.characters[vch_id]
-                    if rch.can_see(vch) and vch.is_same_group(victim) and random.randint(0, number) == 0:
-                        target = vch
-                        number += 1
-                if target:
-                    rch.do_emote("screams and attacks!")
-                    multi_hit(rch, target, TYPE_UNDEFINED)
+            # now check the NPC cases */
+            if ch.is_npc() and not ch.is_affected(AFF_CHARM):
+                if (rch.is_npc() and rch.off_flags.is_set(ASSIST_ALL)) \
+                        or (rch.is_npc() and rch.group and rch.group == ch.group) \
+                        or (rch.is_npc() and rch.race == ch.race and rch.off_flags.is_set(ASSIST_RACE)) \
+                        or (rch.is_npc() and rch.off_flags.is_set(ASSIST_ALIGN)
+                            and ((rch.is_good() and ch.is_good()) or (rch.is_evil()
+                                                                      and ch.is_evil())
+                                 or (rch.is_neutral() and ch.is_neutral()))) \
+                        or (rch.is_npc() and rch.vnum == ch.vnum and rch.off_flags.is_set(ASSIST_VNUM)):
+                    if random.randint(0, 1) == 0:
+                        continue
+
+                    target = None
+                    number = 0
+                    for vch_id in ch.in_room.people[:]:
+                        vch = instance.characters[vch_id]
+                        if rch.can_see(vch) and vch.is_same_group(victim) and random.randint(0, number) == 0:
+                            target = vch
+                            number += 1
+                    if target:
+                        rch.do_emote("screams and attacks!")
+                        multi_hit(rch, target, TYPE_UNDEFINED)
 
 
 # * Do one group of attacks.
@@ -930,7 +933,7 @@ def stop_fighting(ch, fBoth):
 def make_corpse(ch):
     if ch.is_npc():
         name = ch.short_descr
-        corpse = object_creator.create_item(item_templates[OBJ_VNUM_CORPSE_NPC], 0)
+        corpse = object_creator.create_item(instance.item_templates[OBJ_VNUM_CORPSE_NPC], 0)
         corpse.timer = random.randint(3, 6)
         if ch.gold > 0:
             corpse.put(object_creator.create_money(ch.gold, ch.silver))
@@ -939,7 +942,7 @@ def make_corpse(ch):
         corpse.cost = 0
     else:
         name = ch.name
-        corpse = object_creator.create_item(item_templates[OBJ_VNUM_CORPSE_PC], 0)
+        corpse = object_creator.create_item(instance.item_templates[OBJ_VNUM_CORPSE_PC], 0)
         corpse.timer = random.randint(25, 40)
         ch.act.rem_bit(PLR_CANLOOT)
         if not ch.is_clan():
@@ -1036,7 +1039,7 @@ def death_cry(ch):
     handler_game.act(msg, ch, None, None, TO_ROOM)
     if vnum != 0:
         name = ch.short_descr if ch.is_npc() else ch.name
-        item = object_creator.create_item(item_templates[vnum], 0)
+        item = object_creator.create_item(instance.item_templates[vnum], 0)
         item.timer = random.randint(4, 7)
 
         item.short_descr = item.short_descr % name

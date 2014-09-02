@@ -5,6 +5,7 @@ import handler_game
 import merc
 import object_creator
 import state_checks
+import instance
 
 
 def spell_floating_disc(sn, level, ch, victim, target):

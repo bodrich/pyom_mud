@@ -2,6 +2,7 @@ import const
 import handler_game
 import merc
 import object_creator
+import instance
 
 
 def spell_create_rose(sn, level, ch, victim, target):

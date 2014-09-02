@@ -2,6 +2,7 @@ import game_utils
 import handler_magic
 import merc
 import state_checks
+import instance
 
 
 def spell_ventriloquate(sn, level, ch, victim, target):

@@ -7,6 +7,7 @@ import merc
 import interp
 import game_utils
 import handler_game
+import instance
 
 
 def do_sacrifice(ch, argument):

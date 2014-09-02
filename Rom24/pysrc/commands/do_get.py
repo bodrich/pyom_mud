@@ -8,6 +8,7 @@ import interp
 import game_utils
 import handler_item
 import state_checks
+import instance
 
 
 def do_get(ch, argument):

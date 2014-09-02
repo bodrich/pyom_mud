@@ -1,6 +1,7 @@
 import const
 import handler_game
 import handler_magic
+import instance
 import merc
 import state_checks
 
@@ -28,16 +29,17 @@ def spell_remove_curse(sn, level, ch, victim, target):
         victim.send("You feel better.\n")
         handler_game.act("$n looks more relaxed.", victim, None, None, merc.TO_ROOM)
 
-    for obj in victim.contents:
-        if (obj.flags.no_drop \
-                or obj.flags.no_remove)\
-                and not obj.flags.no_uncurse:
+    for item_id in victim.inventory[:]:
+        item = instance.items[item_id]
+        if (item.flags.no_drop \
+                or item.flags.no_remove) \
+                and not item.flags.no_uncurse:
             # attempt to remove curse */
-            if not handler_magic.saves_dispel(level, obj.level, 0):
-                state_checks.REMOVE_BIT(obj.extra_flags, merc.ITEM_NODROP)
-                state_checks.REMOVE_BIT(obj.extra_flags, merc.ITEM_NOREMOVE)
-                handler_game.act("Your $p glows blue.", victim, obj, None, merc.TO_CHAR)
-                handler_game.act("$n's $p glows blue.", victim, obj, None, merc.TO_ROOM)
+            if not handler_magic.saves_dispel(level, item.level, 0):
+                state_checks.REMOVE_BIT(item.extra_flags, merc.ITEM_NODROP)
+                state_checks.REMOVE_BIT(item.extra_flags, merc.ITEM_NOREMOVE)
+                handler_game.act("Your $p glows blue.", victim, item, None, merc.TO_CHAR)
+                handler_game.act("$n's $p glows blue.", victim, item, None, merc.TO_ROOM)
                 break
 
 

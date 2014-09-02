@@ -5,7 +5,7 @@ import handler_game
 import merc
 import state_checks
 
-
+#TODO: Known broken
 def spell_enchant_weapon(sn, level, ch, victim, target):
     obj = victim
 
