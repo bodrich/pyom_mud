@@ -5,7 +5,7 @@ import handler_game
 import merc
 import state_checks
 
-
+#TODO: Known broken
 def spell_enchant_armor(sn, level, ch, victim, target):
     obj = victim
     if obj.item_type != merc.ITEM_ARMOR:

@@ -689,11 +689,11 @@ def format_item_to_char(item, ch, fShort):
 
     if item.flags.invis:
         buf += "(Invis) "
-    if ch.is_affected(merc.AFF_DETECT_EVIL) and item.evil:
+    if ch.is_affected(merc.AFF_DETECT_EVIL) and item.flags.evil:
         buf += "(Red Aura) "
-    if ch.is_affected(merc.AFF_DETECT_GOOD) and item.bless:
+    if ch.is_affected(merc.AFF_DETECT_GOOD) and item.flags.bless:
         buf += "(Blue Aura) "
-    if ch.is_affected(merc.AFF_DETECT_MAGIC) and item.magic:
+    if ch.is_affected(merc.AFF_DETECT_MAGIC) and item.flags.magic:
         buf += "(Magical) "
     if item.flags.glow:
         buf += "(Glowing) "

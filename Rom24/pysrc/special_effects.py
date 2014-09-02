@@ -43,6 +43,7 @@ import state_checks
 import update
 import instance
 
+#TODO: Known broken. Most of these effects are broken from assorted refactors that weren't completed.
 
 def acid_effect(vo, level, dam, target):
     if target == merc.TARGET_ROOM:  # nail objects on the floor */

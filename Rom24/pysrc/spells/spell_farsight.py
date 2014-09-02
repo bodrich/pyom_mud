@@ -8,6 +8,7 @@ def spell_farsight(sn, level, ch, victim, target):
         ch.send("Maybe it would help if you could see?\n")
         return
 
+    #TODO: Known broken, missing the scan command.
     ch.do_scan(handler_magic.target_name)
 
 

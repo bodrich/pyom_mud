@@ -89,7 +89,7 @@ def do_look(ch, argument):
     if victim:
         handler_ch.show_char_to_char_1(victim, ch)
         return
-    item_list = ch.items
+    item_list = list(ch.items)
     item_list.extend(room.items)
     for obj_id in item_list:
         item = instance.items[obj_id]
