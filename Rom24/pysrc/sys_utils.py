@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from collections import Iterable
 import itertools
+import psutil
 import logging
 logger = logging.getLogger()
 
@@ -145,7 +146,7 @@ class ResourceSnapshot:
         else:
             return self._proc_io_read
 
-    def log_data(self, previous=None):
+    def log_data(self, previous=None, do_indent: bool=True):
         """
         Returns a string that has been formatted for output through
         the logging system, as we've defined it in all our code.
@@ -158,11 +159,12 @@ class ResourceSnapshot:
         """
         if not previous:
             results = (
-                'Snapshot time: %s' % (self.current_time()),
-                'System booted at: %s' % (self.system_boot_time()),
+                'Snapshot time:     %s' % (self.current_time()),
+                'System booted at:  %s' % (self.system_boot_time()),
                 'System has %dM of %dM available (%.3f%% used)' % (self.system_memory_available(),
                                                                    self.system_memory_total(),
                                                                    self.system_memory_percent_used()),
+                '',
                 'Driver started at: %s' % (self.process_start_time()),
                 'Driver is currently using %dM of RAM' % (self.process_memory()),
                 'Driver has performed %d read and %d write I/O operations.' % (self.process_io(),
@@ -170,14 +172,15 @@ class ResourceSnapshot:
             )
         else:
             results = (
-                'Snapshot time: %s' % (self.current_time()),
+                'Snapshot time:     %s' % (self.current_time()),
                 'Previous snapshot: %s' % (previous.current_time()),
-                'System booted at: %s' % (self.system_boot_time()),
+                'System booted at:  %s' % (self.system_boot_time()),
                 'System has %dM of %dM available (%.3f%% used)' % (self.system_memory_available(),
                                                                    self.system_memory_total(),
                                                                    self.system_memory_percent_used()),
                 'System footprint change: %dK' % ((self.system_memory_available(True) -
                                                    previous.system_memory_available(True)) // 1024),
+                '',
                 'Driver started at: %s' % (self.process_start_time()),
                 'Driver is currently using %dM of RAM' % (self.process_memory()),
                 'Driver footprint change: %dK' % ((self.process_memory(True) -
@@ -185,7 +188,7 @@ class ResourceSnapshot:
                 'Driver has performed %d additional read and %d additional write I/O operations.' %
                 (self.process_io() - previous.process_io(), self.process_io(True) - previous.process_io(True)),
             )
-        spaces = '\n' + ' ' * 51
+        spaces = '\n' + (' ' * 51 if do_indent else '')
         output = spaces.join(results)
         return output
 

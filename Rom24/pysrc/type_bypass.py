@@ -12,4 +12,4 @@ class ObjectType:
         self.is_living = False
         self.is_area = False
         #self.is_npc = False
-        self.is_pc = False
+        #self.is_pc = False

@@ -50,6 +50,7 @@ import instance
 
 
 done = False
+start_snapshot = None
 
 def process_input():
     for d in merc.descriptor_list:
@@ -257,9 +258,9 @@ def is_reconnecting(d, name):
 
 def game_loop(server):
     from update import update_handler
-    #from pyom import startup_time
     import sys_utils
     global done
+    global start_snapshot
 
     start_snapshot = sys_utils.ResourceSnapshot()
     logger.boot(start_snapshot.log_data())
@@ -267,13 +268,13 @@ def game_loop(server):
     db.boot_db()
 
     boot_snapshot = sys_utils.ResourceSnapshot()
-    logger.boot(boot_snapshot.log_data())
+    logger.boot(boot_snapshot.log_data(start_snapshot))
     logger.boot('Pyom database booted in %.3f seconds', (boot_snapshot.current_time(True) -
                                                          start_snapshot.current_time(True)))
     instance.save()
 
     ready_snapshot = sys_utils.ResourceSnapshot()
-    logger.boot(ready_snapshot.log_data())
+    logger.boot(ready_snapshot.log_data(boot_snapshot))
     logger.boot('Pyom database written in %.3f seconds', (ready_snapshot.current_time(True) -
                                                           boot_snapshot.current_time(True)))
 
