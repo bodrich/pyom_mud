@@ -469,7 +469,10 @@ def is_name(arg, name):
     words = _breakup.findall(name)
     for word in words:
         if word[0] in ('"', "'"):
-            word = word[1:-1]
+            if word[0] == word[-1]:
+                word = word[1:-1]
+            else:
+                word = word[1:]
         if word.startswith(arg):
             return True
     return False
@@ -483,7 +486,10 @@ def breakup(arg):
     output = []
     for word in words:
         if word[0] in ('"', "'"):
-            output += [word[1:-1]]
+            if word[0] == word[-1]:
+                output += [word[1:-1]]
+            else:
+                output += [word[1:]]
         else:
             output += [word]
     return tuple(output)
