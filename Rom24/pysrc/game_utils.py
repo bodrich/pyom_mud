@@ -475,6 +475,20 @@ def is_name(arg, name):
     return False
 
 
+def breakup(arg):
+    if not arg:
+        return tuple()
+    arg = arg.lower()
+    words = _breakup.findall(arg)
+    output = []
+    for word in words:
+        if word[0] in ('"', "'"):
+            output += [word[1:-1]]
+        else:
+            output += [word]
+    return tuple(output)
+
+
 def dice(number, size):
     return sum([random.randint(1, size) for x in range(number)])
 
