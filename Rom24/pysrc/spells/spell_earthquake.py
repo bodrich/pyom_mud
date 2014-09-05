@@ -11,7 +11,7 @@ def spell_earthquake(sn, level, ch, victim, target):
     ch.send("The earth trembles beneath your feet! \n")
     handler_game.act("$n makes the earth tremble and shiver.", ch, None, None, merc.TO_ROOM)
 
-    for vch in instance.characters.values():
+    for vch in list(instance.characters.values()):
         if not vch.in_room:
             continue
         if vch.in_room == ch.in_room:

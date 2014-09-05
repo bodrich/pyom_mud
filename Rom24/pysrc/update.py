@@ -282,7 +282,7 @@ def gain_condition(ch, iCond, value):
 # * -- Furey
 def npc_update():
     # Examine all mobs. */
-    for npc in instance.characters.values():
+    for npc in list(instance.characters.values()):
         if not npc.is_npc() or npc.in_room is None or npc.is_affected(merc.AFF_CHARM):
             continue
 
@@ -414,8 +414,8 @@ def weather_update():
     if buf:
         import nanny
         for char in instance.players.items():
-            if char.desc.is_connected(nanny.con_playing) and state_checks.IS_OUTSIDE(char) and state_checks.IS_AWAKE(
-                    char):
+            if char.desc.is_connected(nanny.con_playing) and state_checks.IS_OUTSIDE(char) \
+                    and state_checks.IS_AWAKE(char):
                 char.send(buf)
     return
 
@@ -434,6 +434,10 @@ def char_update():
     id_list = [instance_id for instance_id in instance.characters.keys()]
     for character_id in id_list:
         ch = instance.characters[character_id]
+
+        if ch.environment is None:
+            continue
+
         if ch.timer > 30:
             ch_quit.append(ch)
 
@@ -578,7 +582,7 @@ def char_update():
 
 
 def item_update():
-    for item in instance.items.values():
+    for item in list(instance.items.values()):
         # go through affects and decrement */
         if item:
             for paf in item.affected[:]:
@@ -678,7 +682,7 @@ def item_update():
 # * -- Furey
 # */
 def aggr_update():
-    for wch in instance.characters.values():
+    for wch in list(instance.characters.values()):
         if wch.is_npc() \
                 or wch.level >= merc.LEVEL_IMMORTAL \
                 or wch.in_room is None \

@@ -287,8 +287,8 @@ def g_e_reset(pReset, last, level, npc):
         return last, level, npc
     else:
         itemTemplate = instance.item_templates[pReset.arg1]
-    #if not last:
-    #    continue
+    if not last:
+        return last, level, npc
 
     if not npc:
         logger.error("Reset_area: 'E' or 'G': None mob for vnum %d.", pReset.arg1)

@@ -458,6 +458,8 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
 
     # Extract an obj from the world.
     def extract(self):
+        itemTemplate = instance.item_templates[self.vnum]
+        itemTemplate.count -= 1
         if self.environment:
             if self.equipped_to:
                 self.in_living.raw_unequip(self)

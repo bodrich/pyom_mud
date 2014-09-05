@@ -16,7 +16,7 @@ def do_nofollow(ch, argument):
     else:
         ch.send("You no longer accept followers.\n")
         ch.act.set_bit(merc.PLR_NOFOLLOW)
-        handler_ch.die_follower(ch)
+        handler_ch.remove_followers(ch)
 
 
 interp.register_command(interp.cmd_type('nofollow', do_nofollow, merc.POS_DEAD, 0, merc.LOG_NORMAL, 1))

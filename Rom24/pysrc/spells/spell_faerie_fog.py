@@ -19,8 +19,8 @@ def spell_faerie_fog(sn, level, ch, victim, target):
         if ich == ch or handler_magic.saves_spell(level, ich, merc.DAM_OTHER):
             continue
 
-        ich.affect_strip('invis')
-        ich.affect_strip('mass_invis')
+        ich.affect_strip('invisibility')
+        ich.affect_strip('mass invis')
         ich.affect_strip('sneak')
         ich.affected_by.rem_bit(merc.AFF_HIDE)
         ich.affected_by.rem_bit(merc.AFF_INVISIBLE)

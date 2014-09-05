@@ -82,6 +82,7 @@ def do_drop(ch, argument):
         found = False
         for item_id in ch.inventory[:]:
             item = instance.items[item_id]
+            #TODO: This matches on partial words ("hie" in "shield") and should not.
             if (len(arg) == 3 or arg[4:] in item.name) \
                     and ch.can_see_item(item) \
                     and not item.equipped_to \
