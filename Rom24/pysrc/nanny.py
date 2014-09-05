@@ -615,6 +615,9 @@ def con_read_motd(self):
 
 
 def con_playing(self):
+    #TODO: Remove the is_immortal() check here, and possibly roll that into a new "nolag" flag or similar.
+    if self.character and self.character.wait > 0 and not self.character.is_immortal():
+        return
     command = self.get_command()
     if not command.strip():
         return

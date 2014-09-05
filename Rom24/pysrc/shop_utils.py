@@ -84,8 +84,10 @@ def find_keeper(ch):
     pShop = None
     for keeper_id in ch.in_room.people[:]:
         keeper = instance.characters[keeper_id]
+        if keeper.is_pc:
+            continue
         keeperTemplate = instance.npc_templates[keeper.vnum]
-        if keeper.is_npc() and keeperTemplate.pShop:
+        if keeperTemplate.pShop:
             pShop = keeperTemplate.pShop
             break
     if not pShop:

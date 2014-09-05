@@ -174,7 +174,8 @@ class logged(object):
                     return func(*args, **kwargs)
                 except Exception as err:
                     if isinstance(mch, handler_pc.Pc):
-                        mch.send("Debug has been Enabled\n\n")
+                        mch.send("[RERROR:[x Debug has been enabled.\n")
+                        mch.send("%s\n" % err)
                         char_parse_exception(err, args, ch=mch)
                     else:
                         noch_parse_exception(err, args)
