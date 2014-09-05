@@ -345,7 +345,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
 
     def put(self, instance_object):
         if instance_object.is_item and instance_object.instance_id not in self.inventory:
-            self.inventory += [instance_object.instance_id]
+            self.inventory.insert(0, instance_object.instance_id)
             self.carry_weight += instance_object.get_weight() * state_checks.WEIGHT_MULT(self) // 100
             self.carry_number += instance_object.get_number()
             instance_object.environment = self.instance_id

@@ -122,7 +122,7 @@ class Room(instance.Instancer, environment.Environment, inventory.Inventory, typ
 
     def put(self, instance_object):
         if not instance_object.instance_id in self.inventory:
-            self.inventory += [instance_object.instance_id]
+            self.inventory.insert(0, instance_object.instance_id)
             instance_object._room_vnum = self.vnum
         else:
             raise ValueError('Instance already present in room inventory %d' % instance_object.instance_id)

@@ -319,7 +319,7 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
 
     def put(self, instance_object):
         #if instance_object.is_item:
-        self.inventory += [instance_object.instance_id]
+        self.inventory.insert(0, instance_object.instance_id)
         instance_object.environment = self.instance_id
         if not instance_object.instance_id in self.equipped.values():
             self.carry_number += instance_object.get_number()
