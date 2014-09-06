@@ -42,8 +42,10 @@ INSTANCE_DIR = os.path.join(WORLD_DIR, 'instances')
 #Features
 SHOW_DAMAGE_NUMBERS = True
 DETAILED_INVALID_COMMANDS = True
-SAVE_LIMITER = 300  # Only save files every N seconds, unless forced.
+SAVE_LIMITER = 0  # Only save files every N seconds, unless forced.
 #Save file(s) format selector. Switch JSON to true to save entirely in JSON, Pickle will picklize the json string
 #we serialize, this is a faster save, but somewhat less readable, and not hand edit friendly.
 SAVE_FORMAT = {'Pickle': (True, PKL_EXTN),
                'JSON': (False, DATA_EXTN)}
+
+ENABLE_DUPE_PROTECTION = False

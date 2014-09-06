@@ -296,6 +296,10 @@ class Pc(living.Living):
             return False
 
         argument, arg = read_word(argument)
+        argument = argument.lower().strip()
+
+        #TODO: Stock ROM allows partial words as arguments, but using the "in" operator doesn't allow for that.
+
         if "help".startswith(arg):
             if not argument:
                 self.do_help("group help")
@@ -308,7 +312,6 @@ class Pc(living.Living):
             if not argument:
                 self.send("You must provide a skill name.\n")
                 return True
-            argument = argument.lower()
             if argument in const.group_table:
                 gn = const.group_table[argument]
                 if gn.name in self.gen_data.group_chosen or gn.name in self.group_known:
@@ -348,7 +351,7 @@ class Pc(living.Living):
                 self.send("%s skill added\n" % sn.name)
                 self.gen_data.skill_chosen[sn.name] = True
                 self.gen_data.points_chosen += sn.rating[self.guild.name]
-                self.learned[sn] = 1
+                self.learned[sn.name] = 1
                 self.points += sn.rating[self.guild.name]
                 return True
 
@@ -624,8 +627,9 @@ class Pc(living.Living):
     #player get override to enforce saves, to avoid 'cheat' activities
     def get(self, instance_object, no_save=False):
         super().get(instance_object)
-        if not no_save:
-            self.save(force=True)
+        #TODO: Fix dupeproofing code
+        #if not no_save:
+        #    self.save(force=True)
         return instance_object
 
     @classmethod

@@ -162,7 +162,7 @@ def nuke_pets(ch):
     return
 
 
-def die_follower(ch):
+def remove_followers(ch):
     if ch.master:
         if instance.characters[ch.master].pet == ch.instance_id:
             instance.characters[ch.master].pet = None

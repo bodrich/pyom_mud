@@ -319,7 +319,7 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
 
     def put(self, instance_object):
         #if instance_object.is_item:
-        self.inventory += [instance_object.instance_id]
+        self.inventory.insert(0, instance_object.instance_id)
         instance_object.environment = self.instance_id
         if not instance_object.instance_id in self.equipped.values():
             self.carry_number += instance_object.get_number()
@@ -334,9 +334,6 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
 
     def is_npc(self):
         return self.act.is_set(merc.ACT_IS_NPC)
-
-    def is_pc(self):
-        return not self.act.is_set(merc.ACT_IS_NPC)
 
     def is_good(self):
         return self.alignment >= 350
@@ -638,7 +635,7 @@ class Living(immortal.Immortal, Fight, Grouping, physical.Physical,
         self.pet = None  # just in case
 
         #if fPull:
-        #    die_follower( ch )
+        #    remove_followers( ch )
         fight.stop_fighting(self, True)
 
         for item_id in self.equipped.values():

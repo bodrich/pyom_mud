@@ -345,7 +345,7 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
 
     def put(self, instance_object):
         if instance_object.is_item and instance_object.instance_id not in self.inventory:
-            self.inventory += [instance_object.instance_id]
+            self.inventory.insert(0, instance_object.instance_id)
             self.carry_weight += instance_object.get_weight() * state_checks.WEIGHT_MULT(self) // 100
             self.carry_number += instance_object.get_number()
             instance_object.environment = self.instance_id
@@ -458,6 +458,8 @@ class Items(instance.Instancer, environment.Environment, physical.Physical, inve
 
     # Extract an obj from the world.
     def extract(self):
+        itemTemplate = instance.item_templates[self.vnum]
+        itemTemplate.count -= 1
         if self.environment:
             if self.equipped_to:
                 self.in_living.raw_unequip(self)

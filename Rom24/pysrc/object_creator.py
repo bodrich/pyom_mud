@@ -395,6 +395,7 @@ def create_item(item_template, level, prev_instance_id: int=None):
     #for paf in item_template.affected:
      #   if paf.location == merc.APPLY_SPELL_AFFECT:
       #      item.affect_add(paf)
+    item_template.count += 1
     return item
 
 

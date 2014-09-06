@@ -58,6 +58,7 @@ class Npc(living.Living):
         super().__init__()
         #self.is_npc = True
         self.vnum = 0  # Needs to come before the template to setup the instance
+        self.is_pc = False
         self.memory = None
         self.spec_fun = None
         self.new_format = True

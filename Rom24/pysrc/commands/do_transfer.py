@@ -17,6 +17,7 @@ def do_transfer(ch, argument):
         ch.send("Transfer whom (and where)?\n")
         return
     if arg1 == "all":
+        #TODO: Convert to characters, not descriptors
         for d in merc.descriptor_list:
             if d.is_connected(nanny.con_playing) \
                     and d.character != ch \
