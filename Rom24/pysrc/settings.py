@@ -49,3 +49,20 @@ SAVE_FORMAT = {'Pickle': (True, PKL_EXTN),
                'JSON': (False, DATA_EXTN)}
 
 ENABLE_DUPE_PROTECTION = False
+ENABLE_HUNGER_THIRST = True
+
+#Modifiers
+# Percent modifiers to regen on ticks
+GLOBAL_HIT_REGEN = 500
+GLOBAL_MANA_REGEN = 500
+GLOBAL_MOVE_REGEN = 500
+
+# Percent modifiers to all damage dealt
+PLAYER_DAMAGE = 300
+NPC_DAMAGE = 100
+
+# Percent modifiers to experience gained on kill
+EXPERIENCE_GAINS = 5000
+
+# Reset multipliers
+RESET_MOBS = 3
