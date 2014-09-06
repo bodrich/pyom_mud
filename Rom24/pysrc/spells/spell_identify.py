@@ -9,7 +9,7 @@ def spell_identify(sn, level, ch, victim, target):
     if type(item) is int:
         item = instance.items[item]
     ch.send("Item '{item.name}' is type {item.item_type}, "
-            "weight is {weight}".format(item=item, weight=(item.weight // 10)))
+            "weight is {weight}\n".format(item=item, weight=(item.weight // 10)))
     ch.send("Equips to: {item.equips_to_names}\n".format(item=item))
     ch.send("Item Attribute Flags: {item.item_attribute_names}\n".format(item=item))
     ch.send("Item Restriction Flags: {item.item_restriction_names}\n".format(item=item))
@@ -35,22 +35,7 @@ def spell_identify(sn, level, ch, victim, target):
         if item.value[4] != 100:
             ch.send("Weight multiplier: {item.value[4]}%%\n".format(item=item))
     elif item.item_type == merc.ITEM_WEAPON:
-        ch.send("Weapon type is ")
-
-        weapons = {merc.WEAPON_EXOTIC: "exotic",
-                   merc.WEAPON_SWORD: "sword",
-                   merc.WEAPON_DAGGER: "dagger",
-                   merc.WEAPON_SPEAR: "spear//staff",
-                   merc.WEAPON_MACE: "mace//club",
-                   merc.WEAPON_AXE: "axe",
-                   merc.WEAPON_FLAIL: "flail",
-                   merc.WEAPON_WHIP: "whip",
-                   merc.WEAPON_POLEARM: "polearm"}
-
-        if item.value[0] not in weapons:
-            ch.send("unknown")
-        else:
-            ch.send(weapons[item.value[0]])
+        ch.send("Weapon type is {item.value[0]}\n".format(item=item))
 
         if item.new_format:
             ch.send("Damage is {item.value[1]}d{item.value[2]} "

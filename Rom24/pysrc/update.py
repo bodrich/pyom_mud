@@ -161,6 +161,8 @@ def hit_gain(ch):
     if ch.is_affected(merc.AFF_HASTE) or ch.is_affected(merc.AFF_SLOW):
         gain //= 2
 
+    gain = gain * settings.GLOBAL_HIT_REGEN // 100
+
     return int(min(gain, ch.max_hit - ch.hit))
 
 
@@ -218,6 +220,8 @@ def mana_gain(ch):
     if ch.is_affected(merc.AFF_HASTE) or ch.is_affected(merc.AFF_SLOW):
         gain //= 2
 
+    gain = gain * settings.GLOBAL_MANA_REGEN // 100
+
     return int(min(gain, ch.max_mana - ch.mana))
 
 
@@ -254,6 +258,8 @@ def move_gain(ch):
 
     if ch.is_affected(merc.AFF_HASTE) or ch.is_affected(merc.AFF_SLOW):
         gain //= 2
+
+    gain = gain * settings.GLOBAL_MOVE_REGEN // 100
 
     return int(min(gain, ch.max_move - ch.move))
 
@@ -500,8 +506,9 @@ def char_update():
 
             gain_condition(ch, merc.COND_DRUNK, -1)
             gain_condition(ch, merc.COND_FULL, -4 if ch.size > merc.SIZE_MEDIUM else -2)
-            gain_condition(ch, merc.COND_THIRST, -1)
-            gain_condition(ch, merc.COND_HUNGER, -2 if ch.size > merc.SIZE_MEDIUM else -1)
+            if settings.ENABLE_HUNGER_THIRST:
+                gain_condition(ch, merc.COND_THIRST, -1)
+                gain_condition(ch, merc.COND_HUNGER, -2 if ch.size > merc.SIZE_MEDIUM else -1)
 
         for paf in ch.affected[:]:
             if paf.duration > 0:
