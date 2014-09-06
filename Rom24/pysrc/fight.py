@@ -532,7 +532,7 @@ def damage(ch, victim, dam, dt, dam_type, show):
         dam //= 2
 
     if dam > 1 and ((victim.is_affected(AFF_PROTECT_EVIL) and ch.is_evil()) \
-                            or (victim.is_affected(AFF_PROTECT_GOOD) and ch.is_good() )):
+                 or (victim.is_affected(AFF_PROTECT_GOOD) and ch.is_good() )):
         dam -= dam // 4
 
     immune = False
@@ -553,6 +553,12 @@ def damage(ch, victim, dam, dt, dam_type, show):
         dam -= dam // 3
     elif imm == IS_VULNERABLE:
         dam += dam // 2
+
+    if ch.is_pc:
+        dam = dam * settings.PLAYER_DAMAGE // 100
+    elif ch.is_npc:
+        dam = dam * settings.NPC_DAMAGE // 100
+
     dam = int(dam)
     if show:
         dam_message(ch, victim, dam, dt, immune)
@@ -1150,7 +1156,6 @@ def group_gain(ch, victim):
 # Also adjust alignment of killer.
 # Edit this function to change xp computations.
 def xp_compute(gch, victim, total_levels):
-    return 5000
     level_range = victim.level - gch.level
     # compute the base exp */
     if level_range == -9:
@@ -1273,6 +1278,8 @@ def xp_compute(gch, victim, total_levels):
     xp = random.randint(int(xp * 3 // 4), int(xp * 5 // 4))
     # adjust for grouping */
     xp = xp * gch.level // (max(1, total_levels - 1))
+
+    xp = xp * settings.EXPERIENCE_GAINS // 100
     return xp
 
 

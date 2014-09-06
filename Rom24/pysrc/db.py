@@ -164,7 +164,7 @@ def m_reset(pReset, last, level, npc):
         roomInstance_id = instance.instances_by_room[pReset.arg3][0]
         roomInstance = instance.global_instances[roomInstance_id]
 
-    if npcTemplate.count >= pReset.arg2:
+    if npcTemplate.count >= pReset.arg2 * settings.RESET_MOBS:
         last = False
         return last, level, npc
     count = 0
@@ -173,11 +173,11 @@ def m_reset(pReset, last, level, npc):
         if npc.is_npc():
             if npc.vnum == npcTemplate.vnum:
                 count += 1
-                if count >= pReset.arg4:
+                if count >= pReset.arg4 * settings.RESET_MOBS:
                     last = False
                     break
 
-    if count >= pReset.arg4:
+    if count >= pReset.arg4 * settings.RESET_MOBS:
         return last, level, npc
 
     npc = object_creator.create_mobile(npcTemplate)
