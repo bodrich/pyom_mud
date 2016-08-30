@@ -53,16 +53,16 @@ ENABLE_HUNGER_THIRST = True
 
 #Modifiers
 # Percent modifiers to regen on ticks
-GLOBAL_HIT_REGEN = 500
-GLOBAL_MANA_REGEN = 500
-GLOBAL_MOVE_REGEN = 500
+GLOBAL_HIT_REGEN = 100
+GLOBAL_MANA_REGEN = 100
+GLOBAL_MOVE_REGEN = 100
 
 # Percent modifiers to all damage dealt
-PLAYER_DAMAGE = 300
+PLAYER_DAMAGE = 100
 NPC_DAMAGE = 100
 
 # Percent modifiers to experience gained on kill
-EXPERIENCE_GAINS = 5000
+EXPERIENCE_GAINS = 100
 
 # Reset multipliers
-RESET_MOBS = 3
+RESET_MOBS = 1
